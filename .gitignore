@@ -43,6 +43,9 @@ $RECYCLE.BIN/
 *.hex
 *.axf
 
+#Dependencies File
+.dep
+
 #Backup File
 *.[Bb]ak
 
