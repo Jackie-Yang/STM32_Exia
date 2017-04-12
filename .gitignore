@@ -31,6 +31,10 @@ $RECYCLE.BIN/
 *.crf
 *.__i
 *.d
+*.htm
+*.tra
+*.sct
+*.lnp
 
 #log file
 *.plg
@@ -38,5 +42,8 @@ $RECYCLE.BIN/
 #bin file
 *.hex
 *.axf
+
+#Backup File
+*.[Bb]ak
 
 
