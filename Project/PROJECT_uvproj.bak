@@ -345,7 +345,7 @@
               <MiscControls></MiscControls>
               <Define>STM32F10X_HD,USE_STDPERIPH_DRIVER</Define>
               <Undefine></Undefine>
-              <IncludePath>..\Libraries\CMSIS;..\Libraries\FWLIB\inc;..\Libraries\FWLIB\src;..\User;..\User\Setup;..\User\USART;..\User\Delay;..\User\TIMER;..\User\I2C_2.0;..\User\EEPROOM;..\User\GY_86\MPU6050;..\User\GY_86\MS5611;..\User\GY_86\HMC5883L;..\User\DMA;..\User\IMU;..\User\PID;..\User\filter</IncludePath>
+              <IncludePath>..\Libraries\CMSIS;..\Libraries\FWLIB\inc;..\Libraries\FWLIB\src;..\User;..\User\Setup;..\User\USART;..\User\Delay;..\User\TIMER;..\User\I2C_2.0;..\User\EEPROOM;..\User\GY_86\MPU6050;..\User\GY_86\MS5611;..\User\GY_86\HMC5883L;..\User\DMA;..\User\IMU;..\User\PID;..\User\filter;..\User\KS10X</IncludePath>
             </VariousControls>
           </Cads>
           <Aads>
@@ -537,6 +537,11 @@
               <FileName>DMA.c</FileName>
               <FileType>1</FileType>
               <FilePath>..\User\DMA\DMA.c</FilePath>
+            </File>
+            <File>
+              <FileName>KS10X.c</FileName>
+              <FileType>1</FileType>
+              <FilePath>..\User\KS10X\KS10X.c</FilePath>
             </File>
           </Files>
         </Group>
