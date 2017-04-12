@@ -1,0 +1,4 @@
+--cpu Cortex-M3 "..\output\startup_stm32f10x_hd.o" "..\output\core_cm3.o" "..\output\system_stm32f10x.o" "..\output\misc.o" "..\output\stm32f10x_flash.o" "..\output\stm32f10x_gpio.o" "..\output\stm32f10x_rcc.o" "..\output\stm32f10x_tim.o" "..\output\stm32f10x_usart.o" "..\output\stm32f10x_exti.o" "..\output\stm32f10x_adc.o" "..\output\stm32f10x_dma.o" "..\output\main.o" "..\output\pid.o" "..\output\imu.o" "..\output\filter.o" "..\output\i2c.o" "..\output\timer.o" "..\output\delay.o" "..\output\setup.o" "..\output\usart.o" "..\output\mpu6050.o" "..\output\eeprom.o" "..\output\ms5611.o" "..\output\hmc5883l.o" "..\output\dma.o" "..\output\ks10x.o" --library_type=microlib --strict --scatter "..\Output\PROJECT.sct" 
+--autoat --summary_stderr --info summarysizes --map --xref --callgraph --symbols 
+--info sizes --info totals --info unused --info veneers 
+ --list "..\Listing\PROJECT.map" -o "..\Output\PROJECT.axf"
