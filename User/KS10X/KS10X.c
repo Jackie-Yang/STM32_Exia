@@ -1,7 +1,7 @@
 #include "KS10X.h"
 #include "I2C.h"
 #include "delay.h"
-#include "DMA.h"
+#include "Setup.h"
 
 /*************进入配置模式**************/
 //#define KS109_DEBUG
@@ -67,7 +67,7 @@ void KS10X_Get_High(void)
 	if(result < 0x2c10)					//防止超过11.280m(最大值)
 	{
 		KS10X_high = result;
-		DMA_Buff_In_16(KS10X_high ,KS10X_HIGH_INDEX);
+		stQuadrotor_State.KS10X_High = KS10X_high;
 	}	
 	delay_us(80);
 	KS10X_command(0xbc);	   //发送指令，让传感器探测

@@ -1,7 +1,7 @@
 #ifndef SETUP_H
 #define SETUP_H
 #include "stm32f10x.h"
-
+#include "Quadrotor_State.h"
 
 #define LED_OFF GPIO_SetBits(GPIOC,GPIO_Pin_13)
 #define LED_ON	GPIO_ResetBits(GPIOC,GPIO_Pin_13)
@@ -17,6 +17,9 @@
 #define TOGGLE(led)		digitalToggle(GPIOC, led)
 #define ON(led)				digitalHi(GPIOC, led)
 #define OFF(led)			digitalLo(GPIOC, led) 
+
+//飞行器数据
+extern Quadrotor_State stQuadrotor_State;
 
 void init(void);				   //系统初始化,所有模块初始化函数的集合
 void RCC_Configuration(void);	   //系统、外设时钟配置

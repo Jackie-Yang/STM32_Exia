@@ -1,6 +1,6 @@
 #include "HMC5883L.h"
 #include "math.h"
-#include "DMA.h"
+#include "Setup.h"
 #include "I2C.h"
 #include "delay.h"
 #include "eeprom.h"
@@ -53,21 +53,22 @@ void Read_HMC5883L(void)//读取
 //	Magn_y=Magn_y;
 	//Magn_y=(Magn_y*HMC5883L_GAIN_Y)/10000;
 
-	DMA_Buff_In_16(HMC5883L_X,HMC5883L_X_INDEX);	
-	DMA_Buff_In_16(HMC5883L_Y,HMC5883L_Y_INDEX);	
-	DMA_Buff_In_16(HMC5883L_Z,HMC5883L_Z_INDEX);	
+	stQuadrotor_State.HMC5883L_X = HMC5883L_X;
+	stQuadrotor_State.HMC5883L_Y = HMC5883L_Y;
+	stQuadrotor_State.HMC5883L_Z = HMC5883L_Z;
 
-
-
-  if(HMC5883L_X>0x7fff) HMC5883L_X -= 0xffff;	  
-  if(HMC5883L_Y>0x7fff) HMC5883L_Y -= 0xffff;
-  if(HMC5883L_Z>0x7fff) HMC5883L_Z -= 0xffff;		
-  HMC5883L_angle= atan2((double)HMC5883L_Y,(double)HMC5883L_X) * (180 / 3.14159265) + 180; // angle in degrees
+	if (HMC5883L_X > 0x7fff)
+		HMC5883L_X -= 0xffff;
+	if (HMC5883L_Y > 0x7fff)
+		HMC5883L_Y -= 0xffff;
+	if (HMC5883L_Z > 0x7fff)
+		HMC5883L_Z -= 0xffff;
+	HMC5883L_angle = atan2((double)HMC5883L_Y, (double)HMC5883L_X) * (180 / 3.14159265) + 180; // angle in degrees
 	HMC5883L_angle=HMC5883L_angle+100;
 	if(HMC5883L_angle>360)
 		HMC5883L_angle=HMC5883L_angle-360;
 
-		DMA_Buff_In_16( (int16_t)(HMC5883L_angle * 10),HMC5883L_ANGLE_INDEX);	
+	stQuadrotor_State.HMC5883L_Angle = (int16_t)(HMC5883L_angle * 10);
 }
 
 void HMC5883L_SetOffset(void)
@@ -135,9 +136,10 @@ void HMC5883L_SetOffset(void)
 	EE_WriteVariable(HMC5883L_OFFSET_Z_ADDR, HMC5883L_Z_offset);
 
 	  //准备传送校正数据
-	DMA_Buff_In_16(0,CHECK_STATE_INDEX);
-	DMA_Buff_In_16(HMC5883L_X_offset,CHECK_DATA_INDEX);
-	DMA_Buff_In_16(25,CHECK_STATE_INDEX);
+
+	// DMA_Buff_In_16(0,CHECK_STATE_INDEX);
+	// DMA_Buff_In_16(HMC5883L_X_offset,CHECK_DATA_INDEX);
+	// DMA_Buff_In_16(25,CHECK_STATE_INDEX);
 
 //	DMA_Buff_In_16(HMC5883L_X_offset,27);	
 //	DMA_Buff_In_16(HMC5883L_Y_offset,28);	

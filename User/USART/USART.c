@@ -1,6 +1,6 @@
 #include "USART.h"
-#include "setup.h"
-#include "DMA.h"
+#include "Setup.h"
+// #include "DMA.h"
 #include "HMC5883L.h"
 #include "MPU6050.h"
 #include "MS5611.h"
@@ -130,20 +130,20 @@ void USART1_IRQHandler()
 //					set_motorPWM(i + 1,receive_THRO);
 //				}
 
-				if(REC_RUDD == 0)					//归中位
+				if(stQuadrotor_State.Rudd == 0)					//归中位
 				{
-					REC_RUDD = 1500;
+					stQuadrotor_State.Rudd = 1500;
 				}
-				if(REC_AILE == 0)
+				if(stQuadrotor_State.Aile == 0)
 				{
-					REC_AILE = 1500;
+					stQuadrotor_State.Aile = 1500;
 				}
 
-				if(REC_ELEV == 0)
+				if(stQuadrotor_State.Elev == 0)
 				{
-					REC_ELEV = 1500;
+					stQuadrotor_State.Elev = 1500;
 				}
-				REC_THRO = 1100 + USART_ReceiveData(USART1) * 8;
+				stQuadrotor_State.Thro = 1100 + USART_ReceiveData(USART1) * 8;
 				//DMA_Buff_In_16(REC_THRO,THRO_INDEX);
 
 				//USART_ClearFlag(USART1,USART_FLAG_RXNE);
@@ -160,7 +160,7 @@ void USART1_IRQHandler()
 //					set_motorPWM(i + 1,receive_THRO);
 //				}
 
-				REC_RUDD = 1100 + USART_ReceiveData(USART1) * 8;
+				stQuadrotor_State.Rudd = 1100 + USART_ReceiveData(USART1) * 8;
 				//DMA_Buff_In_16(REC_THRO,THRO_INDEX);
 
 				//USART_ClearFlag(USART1,USART_FLAG_RXNE);
@@ -177,7 +177,7 @@ void USART1_IRQHandler()
 //					set_motorPWM(i + 1,receive_THRO);
 //				}
 
-				REC_ELEV = 1100 + USART_ReceiveData(USART1) * 8;
+				stQuadrotor_State.Elev = 1100 + USART_ReceiveData(USART1) * 8;
 				//DMA_Buff_In_16(REC_THRO,THRO_INDEX);
 
 				//USART_ClearFlag(USART1,USART_FLAG_RXNE);
@@ -194,7 +194,7 @@ void USART1_IRQHandler()
 //					set_motorPWM(i + 1,receive_THRO);
 //				}
 
-				REC_AILE = 1100 + USART_ReceiveData(USART1) * 8;
+				stQuadrotor_State.Aile = 1100 + USART_ReceiveData(USART1) * 8;
 				//DMA_Buff_In_16(REC_THRO,THRO_INDEX);
 
 				//USART_ClearFlag(USART1,USART_FLAG_RXNE);
@@ -204,22 +204,22 @@ void USART1_IRQHandler()
 
 			case 7:
 			{
-				REC_THRO = 1100;
+				stQuadrotor_State.Thro = 1100;
 
-				REC_AILE = 1500;
-				REC_ELEV = 1500;
-				REC_RUDD = 1500;
-				set_motorPWM(1,REC_THRO);
-				set_motorPWM(2,REC_THRO);
-				set_motorPWM(3,REC_THRO);
-				set_motorPWM(4,REC_THRO);
+				stQuadrotor_State.Aile = 1500;
+				stQuadrotor_State.Elev = 1500;
+				stQuadrotor_State.Rudd = 1500;
+				set_motorPWM(1,stQuadrotor_State.Thro);
+				set_motorPWM(2,stQuadrotor_State.Thro);
+				set_motorPWM(3,stQuadrotor_State.Thro);
+				set_motorPWM(4,stQuadrotor_State.Thro);
 				break;
 			}
 			case 8:
 			{
-				REC_AILE = 1500;
-				REC_ELEV = 1500;
-				REC_RUDD = 1500;
+				stQuadrotor_State.Aile = 1500;
+				stQuadrotor_State.Elev = 1500;
+				stQuadrotor_State.Rudd = 1500;
 				break;
 			}
 
@@ -454,183 +454,183 @@ void USART1_IRQHandler()
 	//检查某一固定参数（例如PID，校正值这些相对不会变的值，不需频繁载入DMA，需要的时候发送相应指令，返回检查值）：
 			case 24:		   //检查关闭
 			{
-				DMA_Buff_In_16(0xFFFF,CHECK_STATE_INDEX);
-				DMA_Buff_In_16(0xFFFF,CHECK_DATA_INDEX);
+				stQuadrotor_State.Check_State = 0xFFFF;
+				stQuadrotor_State.Check_Data = 0xFFFF;
 				break;
 			}
 			//检查MPU6050校正数据
 			case 25:
 			{
-				DMA_Buff_In_16(0xFFFF,CHECK_STATE_INDEX);
-				DMA_Buff_In_16(Accel_offset_X,CHECK_DATA_INDEX);
-				DMA_Buff_In_16(25,CHECK_STATE_INDEX);
+				stQuadrotor_State.Check_State = 0xFFFF;
+				stQuadrotor_State.Check_Data = Accel_offset_X;
+				stQuadrotor_State.Check_State = ReceiveOrder;
 				break;
 			}
 			case 26:
 			{
-				DMA_Buff_In_16(0xFFFF,CHECK_STATE_INDEX);
-				DMA_Buff_In_16(Accel_offset_Y,CHECK_DATA_INDEX);
-				DMA_Buff_In_16(26,CHECK_STATE_INDEX);
+				stQuadrotor_State.Check_State = 0xFFFF;
+				stQuadrotor_State.Check_Data = Accel_offset_Y;
+				stQuadrotor_State.Check_State = ReceiveOrder;
 				break;
 			}
 			case 27:
 			{
-				DMA_Buff_In_16(0xFFFF,CHECK_STATE_INDEX);
-				DMA_Buff_In_16(Accel_offset_X,CHECK_DATA_INDEX);
-				DMA_Buff_In_16(27,CHECK_STATE_INDEX);
+				stQuadrotor_State.Check_State = 0xFFFF;
+				stQuadrotor_State.Check_Data = Accel_offset_Z;
+				stQuadrotor_State.Check_State = ReceiveOrder;
 				break;
 			}
 			case 28:
 			{
-				DMA_Buff_In_16(0xFFFF,CHECK_STATE_INDEX);
-				DMA_Buff_In_16(Gyro_offset_Y,CHECK_DATA_INDEX);
-				DMA_Buff_In_16(28,CHECK_STATE_INDEX);
+				stQuadrotor_State.Check_State = 0xFFFF;
+				stQuadrotor_State.Check_Data = Gyro_offset_X;
+				stQuadrotor_State.Check_State = ReceiveOrder;
 				break;
 			}
 			case 29:
 			{
-				DMA_Buff_In_16(0xFFFF,CHECK_STATE_INDEX);
-				DMA_Buff_In_16(Gyro_offset_Z,CHECK_DATA_INDEX);
-				DMA_Buff_In_16(29,CHECK_STATE_INDEX);
+				stQuadrotor_State.Check_State = 0xFFFF;
+				stQuadrotor_State.Check_Data = Gyro_offset_Y;
+				stQuadrotor_State.Check_State = ReceiveOrder;
 				break;
 			}
 			case 30:
 			{
-				DMA_Buff_In_16(0xFFFF,CHECK_STATE_INDEX);
-				DMA_Buff_In_16(Gyro_offset_Z,CHECK_DATA_INDEX);
-				DMA_Buff_In_16(30,CHECK_STATE_INDEX);
+				stQuadrotor_State.Check_State = 0xFFFF;
+				stQuadrotor_State.Check_Data = Gyro_offset_Z;
+				stQuadrotor_State.Check_State = ReceiveOrder;
 				break;
 			}
 			//检查HMC5883L校正数据
 			case 31:
 			{
-				DMA_Buff_In_16(0xFFFF,CHECK_STATE_INDEX);
-				DMA_Buff_In_16(HMC5883L_X_offset,CHECK_DATA_INDEX);
-				DMA_Buff_In_16(31,CHECK_STATE_INDEX);
+				stQuadrotor_State.Check_State = 0xFFFF;
+				stQuadrotor_State.Check_Data = HMC5883L_X_offset;
+				stQuadrotor_State.Check_State = ReceiveOrder;
 				break;
 			}
 			case 32:
 			{
-				DMA_Buff_In_16(0xFFFF,CHECK_STATE_INDEX);
-				DMA_Buff_In_16(HMC5883L_Y_offset,CHECK_DATA_INDEX);
-				DMA_Buff_In_16(32,CHECK_STATE_INDEX);
+				stQuadrotor_State.Check_State = 0xFFFF;
+				stQuadrotor_State.Check_Data = HMC5883L_Y_offset;
+				stQuadrotor_State.Check_State = ReceiveOrder;
 				break;
 			}
 			case 33:
 			{
-				DMA_Buff_In_16(0xFFFF,CHECK_STATE_INDEX);
-				DMA_Buff_In_16(HMC5883L_Z_offset,CHECK_DATA_INDEX);
-				DMA_Buff_In_16(33,CHECK_STATE_INDEX);
+				stQuadrotor_State.Check_State = 0xFFFF;
+				stQuadrotor_State.Check_Data = HMC5883L_Z_offset;
+				stQuadrotor_State.Check_State = ReceiveOrder;
 				break;
 			}
 			//检查PID
 			case 34:
 			{
-				DMA_Buff_In_16(0xFFFF,CHECK_STATE_INDEX);
-				DMA_Buff_In_16(Roll.Gyro_Kp * 100,CHECK_DATA_INDEX);
-				DMA_Buff_In_16(34,CHECK_STATE_INDEX);
+				stQuadrotor_State.Check_State = 0xFFFF;
+				stQuadrotor_State.Check_Data = Roll.Gyro_Kp * 100;
+				stQuadrotor_State.Check_State = ReceiveOrder;
 				break;
 			}
 			case 35:
 			{
-				DMA_Buff_In_16(0xFFFF,CHECK_STATE_INDEX);
-				DMA_Buff_In_16(Roll.Gyro_Ki * 100,CHECK_DATA_INDEX);
-				DMA_Buff_In_16(35,CHECK_STATE_INDEX);
+				stQuadrotor_State.Check_State = 0xFFFF;
+				stQuadrotor_State.Check_Data = Roll.Gyro_Ki * 100;
+				stQuadrotor_State.Check_State = ReceiveOrder;
 				break;
 			}
 			case 36:
 			{
-				DMA_Buff_In_16(0xFFFF,CHECK_STATE_INDEX);
-				DMA_Buff_In_16(Roll.Gyro_Kd * 100,CHECK_DATA_INDEX);
-				DMA_Buff_In_16(36,CHECK_STATE_INDEX);
+				stQuadrotor_State.Check_State = 0xFFFF;
+				stQuadrotor_State.Check_Data = Roll.Gyro_Kd * 100;
+				stQuadrotor_State.Check_State = ReceiveOrder;
 				break;
 			}
 
 			case 37:
 			{
-				DMA_Buff_In_16(0xFFFF,CHECK_STATE_INDEX);
-				DMA_Buff_In_16(Roll.angle_Kp * 100,CHECK_DATA_INDEX);
-				DMA_Buff_In_16(37,CHECK_STATE_INDEX);
+				stQuadrotor_State.Check_State = 0xFFFF;
+				stQuadrotor_State.Check_Data = Roll.angle_Kp * 100;
+				stQuadrotor_State.Check_State = ReceiveOrder;
 				break;
 			}
 			case 38:
 			{
-				DMA_Buff_In_16(0xFFFF,CHECK_STATE_INDEX);
-				DMA_Buff_In_16(Roll.angle_Ki * 100,CHECK_DATA_INDEX);
-				DMA_Buff_In_16(38,CHECK_STATE_INDEX);
+				stQuadrotor_State.Check_State = 0xFFFF;
+				stQuadrotor_State.Check_Data = Roll.angle_Ki * 100;
+				stQuadrotor_State.Check_State = ReceiveOrder;
 				break;
 			}
 			case 39:
 			{
-				DMA_Buff_In_16(0xFFFF,CHECK_STATE_INDEX);
-				DMA_Buff_In_16(Roll.angle_Kd * 100,CHECK_DATA_INDEX);
-				DMA_Buff_In_16(39,CHECK_STATE_INDEX);
+				stQuadrotor_State.Check_State = 0xFFFF;
+				stQuadrotor_State.Check_Data = Roll.angle_Kd * 100;
+				stQuadrotor_State.Check_State = ReceiveOrder;
 				break;
 			}
 			/******************************Pitch*********************************/
 			case 40:
 			{
-				DMA_Buff_In_16(0xFFFF,CHECK_STATE_INDEX);
-				DMA_Buff_In_16(Pitch.Gyro_Kp * 100,CHECK_DATA_INDEX);
-				DMA_Buff_In_16(40,CHECK_STATE_INDEX);
+				stQuadrotor_State.Check_State = 0xFFFF;
+				stQuadrotor_State.Check_Data = Pitch.Gyro_Kp * 100;
+				stQuadrotor_State.Check_State = ReceiveOrder;
 				break;
 			}
 			case 41:
 			{
-				DMA_Buff_In_16(0xFFFF,CHECK_STATE_INDEX);
-				DMA_Buff_In_16(Pitch.Gyro_Ki * 100,CHECK_DATA_INDEX);
-				DMA_Buff_In_16(41,CHECK_STATE_INDEX);
+				stQuadrotor_State.Check_State = 0xFFFF;
+				stQuadrotor_State.Check_Data = Pitch.Gyro_Ki * 100;
+				stQuadrotor_State.Check_State = ReceiveOrder;
 				break;
 			}
 			case 42:
 			{
-				DMA_Buff_In_16(0xFFFF,CHECK_STATE_INDEX);
-				DMA_Buff_In_16(Pitch.Gyro_Kd * 100,CHECK_DATA_INDEX);
-				DMA_Buff_In_16(42,CHECK_STATE_INDEX);
+				stQuadrotor_State.Check_State = 0xFFFF;
+				stQuadrotor_State.Check_Data = Pitch.Gyro_Kd * 100;
+				stQuadrotor_State.Check_State = ReceiveOrder;
 				break;
 			}
 
 			case 43:
 			{
-				DMA_Buff_In_16(0xFFFF,CHECK_STATE_INDEX);
-				DMA_Buff_In_16(Pitch.angle_Kp * 100,CHECK_DATA_INDEX);
-				DMA_Buff_In_16(43,CHECK_STATE_INDEX);
+				stQuadrotor_State.Check_State = 0xFFFF;
+				stQuadrotor_State.Check_Data = Pitch.angle_Kp * 100;
+				stQuadrotor_State.Check_State = ReceiveOrder;
 				break;
 			}
 			case 44:
 			{
-				DMA_Buff_In_16(0xFFFF,CHECK_STATE_INDEX);
-				DMA_Buff_In_16(Pitch.angle_Ki * 100,CHECK_DATA_INDEX);
-				DMA_Buff_In_16(44,CHECK_STATE_INDEX);
+				stQuadrotor_State.Check_State = 0xFFFF;
+				stQuadrotor_State.Check_Data = Pitch.angle_Ki * 100;
+				stQuadrotor_State.Check_State = ReceiveOrder;
 				break;
 			}
 			case 45:
 			{
-				DMA_Buff_In_16(0xFFFF,CHECK_STATE_INDEX);
-				DMA_Buff_In_16(Pitch.angle_Kd * 100,CHECK_DATA_INDEX);
-				DMA_Buff_In_16(45,CHECK_STATE_INDEX);
+				stQuadrotor_State.Check_State = 0xFFFF;
+				stQuadrotor_State.Check_Data = Pitch.angle_Kd * 100;
+				stQuadrotor_State.Check_State = ReceiveOrder;
 				break;
 			}
 			/****************Yaw*************************/
 			case 46:
 			{
-				DMA_Buff_In_16(0xFFFF,CHECK_STATE_INDEX);
-				DMA_Buff_In_16(Yaw.Gyro_Kp * 100,CHECK_DATA_INDEX);
-				DMA_Buff_In_16(46,CHECK_STATE_INDEX);
+				stQuadrotor_State.Check_State = 0xFFFF;
+				stQuadrotor_State.Check_Data = Yaw.Gyro_Kp * 100;
+				stQuadrotor_State.Check_State = ReceiveOrder;
 				break;
 			}
 			case 47:
 			{
-				DMA_Buff_In_16(0xFFFF,CHECK_STATE_INDEX);
-				DMA_Buff_In_16(Yaw.Gyro_Ki * 100,CHECK_DATA_INDEX);
-				DMA_Buff_In_16(47,CHECK_STATE_INDEX);
+				stQuadrotor_State.Check_State = 0xFFFF;
+				stQuadrotor_State.Check_Data = Yaw.Gyro_Ki * 100;
+				stQuadrotor_State.Check_State = ReceiveOrder;
 				break;
 			}
 			case 48:
 			{
-				DMA_Buff_In_16(0xFFFF,CHECK_STATE_INDEX);
-				DMA_Buff_In_16(Yaw.Gyro_Kd * 100,CHECK_DATA_INDEX);
-				DMA_Buff_In_16(48,CHECK_STATE_INDEX);
+				stQuadrotor_State.Check_State = 0xFFFF;
+				stQuadrotor_State.Check_Data = Yaw.Gyro_Kd * 100;
+				stQuadrotor_State.Check_State = ReceiveOrder;
 				break;
 			}
 

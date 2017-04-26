@@ -3,7 +3,7 @@
 #include "MPU6050.h"
 #include "HMC5883L.h"
 #include "TIMER.h"
-#include "DMA.h"
+#include "Setup.h"
 #include "PID.h"		  
 #include "filter.h"
 
@@ -235,12 +235,12 @@ Yaw=arctan2(2wz+2xy, 1-2yy-2zz);
 //	printf("q0=%f, q1=%f, q2=%f, q3=%f, Yaw=%f, Pitch=%f, Roll=%f, halfT=%f \n\r", q0, q1, q2, q3, Yaw, Pitch, Roll, halfT);
   //  printf("Yaw=%f, Pitch=%f, Roll=%f \n\r", Yaw, Pitch, Roll);
 //	DMA_Buff_In_16((u16)(system_time-time),30);
-	
-	DMA_Buff_In_16((int16_t)(Yaw.angle_cur * 10),YAW_INDEX);				  //小数点后一位
-	DMA_Buff_In_16((int16_t)(Pitch.angle_cur * 10),PITCH_INDEX);
-	DMA_Buff_In_16((int16_t)(Roll.angle_cur * 10),ROLL_INDEX);
-																 
-	DMA_Buff_In_16((int16_t)(High.Accel_cur * 1000),HIGH_ACCEL_INDEX);
+
+    stQuadrotor_State.Yaw = (int16_t)(Yaw.angle_cur * 10);  //小数点后一位
+    stQuadrotor_State.Pitch = (int16_t)(Pitch.angle_cur * 10);
+    stQuadrotor_State.Roll = (int16_t)(Roll.angle_cur * 10);
+    stQuadrotor_State.High_Accel = (int16_t)(High.Accel_cur * 1000);
+
     //DMA_Buff[TEMP3_INDEX + 2] = (u16)((int16_t)High.Accel_cur * 100);
 
 }

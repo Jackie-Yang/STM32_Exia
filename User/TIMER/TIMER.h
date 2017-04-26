@@ -2,12 +2,12 @@
 #define TIMER_H
 #include "stm32f10x.h"
 
-#define REC(n) DMA_Buff[n + 2]
+// #define REC(n) DMA_Buff[n + 2]
 
-#define REC_RUDD	REC(0) 	//Inputs[0].capture	 //·½Ïò¶æ Æ«°Ú
-#define REC_THRO	REC(1) 	//Inputs[1].capture	 //ÓÍÃÅ
-#define REC_AILE	REC(2) 	//Inputs[2].capture	 //¸±Òí   ²â¹ö
-#define REC_ELEV	REC(3) 	//Inputs[3].capture	 //Éý½µ	  ¸©Ñö
+// #define REC_RUDD	REC(0) 	//Inputs[0].capture	 //·½Ïò¶æ Æ«°Ú
+// #define REC_THRO	REC(1) 	//Inputs[1].capture	 //ÓÍÃÅ
+// #define REC_AILE	REC(2) 	//Inputs[2].capture	 //¸±Òí   ²â¹ö
+// #define REC_ELEV	REC(3) 	//Inputs[3].capture	 //Éý½µ	  ¸©Ñö
 
 
 struct PWM_State

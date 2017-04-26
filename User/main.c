@@ -1,5 +1,5 @@
 #include "stm32f10x.h"
-#include "setup.h"
+#include "Setup.h"
 #include "delay.h"
 //#include "IMU.h"
 

@@ -2,9 +2,9 @@
 #define OS_H
 
 #include "string.h"			//字符串处理，处理指令
-#include "setup.h"			//系统时钟、IO、中断初始化函数
+#include "Setup.h"			//系统时钟、IO、中断初始化函数
 #include "USART.h"			
-#include "led.h"		   
+#include "LED.h"		   
 #include "timer.h"
 #include "button.h"
 #include "ADC.h"

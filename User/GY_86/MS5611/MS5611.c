@@ -1,6 +1,6 @@
 #include "MS5611.h"
 #include "math.h"
-#include "DMA.h"
+#include "Setup.h"
 #include "I2C.h"
 #include "delay.h"
 #include "filter.h"
@@ -184,11 +184,11 @@ void MS5611_GetPressure(void)
 //	Last_Temperature = MS5611_Temperature;
 
 	MS5611_Temperature = Temperature;						//计算校正后温度
-	DMA_Buff_In_32(MS5611_Temperature,MS5611_TEMP_INDEX);   //存入上位机发送缓存
+	stQuadrotor_State.MS5611_Temp = MS5611_Temperature;		//存入上位机发送缓存
 	OFF = OFF - OFF2;	 	//进行温度补偿
 	SENS = SENS - SENS2;
 	MS5611_Pressure=(D1_Pres/2097152.0*SENS-OFF)/32768.0;  //计算校正后气压，发到上位机缓存
-	DMA_Buff_In_32(MS5611_Pressure,MS5611_PRESS_INDEX);
+	stQuadrotor_State.MS5611_Press = MS5611_Pressure;
 		
     if(Zero_Pressure == 0)
 	{	
@@ -203,7 +203,7 @@ void MS5611_GetPressure(void)
 		MS5611_high = 4433000.0 * (1 - pow((MS5611_Pressure / Zero_Pressure), 0.1903));
 	//	MS5611_high = 15384.62 * Zero_T * ( 1 - exp( 0.190259 * log10(MS5611_Pressure / Zero_Pressure)));	  //高度乘100
 		MS5611_high = high_filter(MS5611_high,high_buf);
-	    DMA_Buff_In_32((int32_t)MS5611_high,MS5611_HIGH_INDEX);
+		stQuadrotor_State.MS5611_HIGH = (int32_t)MS5611_high;
 		//High.high_cur = MS5611_high / 100.0f;
 	}
 	

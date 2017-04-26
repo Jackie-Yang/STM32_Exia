@@ -3,7 +3,7 @@
 #include "IMU.h"
 #include "MPU6050.h"
 #include "eeprom.h"
-#include "DMA.h"
+#include "Setup.h"
 #include "TIMER.h"
 
 //参数整定找最佳， 从小到大顺序查。  
@@ -109,7 +109,7 @@ void PID_set(PID * PID_in,float PID_set)
 {
 	float Gyro_offset;
 
-	if(REC_THRO > 1180)
+	if(stQuadrotor_State.Thro > 1180)
 	{
 	/****************外环角度环********************/
 		float angle_offset = PID_set - PID_in->angle_cur;			//计算误差
@@ -177,7 +177,7 @@ void PID_set(PID * PID_in,float PID_set)
 
 void PID_Gyro_set(PID * PID_in,float PID_set)
 {
-	if(REC_THRO > 1180)
+	if(stQuadrotor_State.Thro > 1180)
 	{
 		float Gyro_offset = PID_set - PID_in->Gyro_cur;
 
@@ -275,14 +275,14 @@ void PID_High_Set(void)
 //	DMA_Buff_In_16((int16_t)(High.speed_cur * 1000),HIGH_SPEED_INDEX);
 
 
-	if(REC_THRO > 1180)
+	if(stQuadrotor_State.Thro > 1180)
 	{
 	}
 	else
 	{
 //		High.Accel_i = 0;
 //		High.speed_i = 0;
-		High.high_out = REC_THRO;
+		High.high_out = stQuadrotor_State.Thro;
 	}
 
 	

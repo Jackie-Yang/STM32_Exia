@@ -1,5 +1,5 @@
 #include "MPU6050.h"
-#include "DMA.h"
+#include "Setup.h"
 #include "eeprom.h"
 #include "USART.h"
 #include "I2C.h"
@@ -25,7 +25,7 @@ int16_t MPU6050_Temperature = 0;
 void MPU6050_Init(void)
 {
 
-  I2C_SendByte(MPU6050_Addr,PWR_MGMT_1, 0x00);	//解除休眠状态
+	I2C_SendByte(MPU6050_Addr,PWR_MGMT_1, 0x00);	//解除休眠状态
 	
 	
 	I2C_SendByte(MPU6050_Addr,SMPLRT_DIV, 0x07);    //陀螺仪采样率
@@ -88,15 +88,14 @@ void READ_MPU6050_Accel(void)
 	{
 		MPU6050_Accel_X = MPU6050_Accel_X + Accel_offset_X;
 	}
-	DMA_Buff_In_16(MPU6050_Accel_X,ACCEL_X_INDEX);
+	stQuadrotor_State.Accel_X = MPU6050_Accel_X;
 
-
-    MPU6050_Accel_Y = I2C_Read_16(MPU6050_Addr,ACCEL_YOUT_H);// + Accel_offset_Y;
+	MPU6050_Accel_Y = I2C_Read_16(MPU6050_Addr,ACCEL_YOUT_H);// + Accel_offset_Y;
 	if( (int32_t)MPU6050_Accel_Y + Accel_offset_Y <= 32768  &&  (int32_t)MPU6050_Accel_Y + Accel_offset_Y >= -32768)
 	{
 		MPU6050_Accel_Y = MPU6050_Accel_Y + Accel_offset_Y;
 	}
-	DMA_Buff_In_16(MPU6050_Accel_Y,ACCEL_Y_INDEX);
+	stQuadrotor_State.Accel_Y = MPU6050_Accel_Y;
 
 
 	MPU6050_Accel_Z = I2C_Read_16(MPU6050_Addr,ACCEL_ZOUT_H);// + Accel_offset_Z;
@@ -104,7 +103,7 @@ void READ_MPU6050_Accel(void)
 	{
 		MPU6050_Accel_Z = MPU6050_Accel_Z + Accel_offset_Z;
 	}
-	DMA_Buff_In_16(MPU6050_Accel_Z,ACCEL_Z_INDEX);
+	stQuadrotor_State.Accel_Z = MPU6050_Accel_Z;
 }
 
 
@@ -123,7 +122,7 @@ void READ_MPU6050_Gyro(void)
 	{
 		MPU6050_Gyro_X = MPU6050_Gyro_X + Gyro_offset_X;
 	}
-	DMA_Buff_In_16(MPU6050_Gyro_X,GYRO_X_INDEX);
+	stQuadrotor_State.Gyro_X = MPU6050_Gyro_X;
 
 
     MPU6050_Gyro_Y = I2C_Read_16(MPU6050_Addr,GYRO_YOUT_H);// + Gyro_offset_Y;
@@ -131,7 +130,7 @@ void READ_MPU6050_Gyro(void)
 	{
 		MPU6050_Gyro_Y = MPU6050_Gyro_Y + Gyro_offset_Y;
 	}
-	DMA_Buff_In_16(MPU6050_Gyro_Y,GYRO_Y_INDEX);
+	stQuadrotor_State.Gyro_Y = MPU6050_Gyro_Y;
 
 
 	MPU6050_Gyro_Z = I2C_Read_16(MPU6050_Addr,GYRO_ZOUT_H);// + Gyro_offset_Z;
@@ -139,7 +138,7 @@ void READ_MPU6050_Gyro(void)
 	{
 		MPU6050_Gyro_Z = MPU6050_Gyro_Z + Gyro_offset_Z;
 	}
-	DMA_Buff_In_16(MPU6050_Gyro_Z,GYRO_Z_INDEX);
+	stQuadrotor_State.Gyro_Z = MPU6050_Gyro_Z;
 }
 
 
@@ -200,7 +199,7 @@ void MPU6050_SetOffset(void)
 void READ_MPU6050_TEMP(void)
 {	
 	MPU6050_Temperature = I2C_Read_16( MPU6050_Addr,TEMP_OUT_H );
-	DMA_Buff_In_16(MPU6050_Temperature,MPU6050_TEMP_INDEX);
+	stQuadrotor_State.MPU6050_Temp = MPU6050_Temperature;
   //计算温度暂时交给上位机
 }
 
