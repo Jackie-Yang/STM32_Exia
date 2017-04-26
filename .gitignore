@@ -38,6 +38,7 @@ $RECYCLE.BIN/
 
 #log file
 *.plg
+JLinkLog.txt
 
 #bin file
 *.hex
