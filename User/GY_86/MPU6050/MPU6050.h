@@ -46,7 +46,7 @@ extern int16_t Accel_offset_X,Accel_offset_Y,Accel_offset_Z;
 extern int16_t MPU6050_Gyro_X,MPU6050_Gyro_Y,MPU6050_Gyro_Z;
 extern int16_t Gyro_offset_X,Gyro_offset_Y,Gyro_offset_Z;
 
-extern int16_t MPU6050_Temperature;
+extern float MPU6050_Temperature;
 
 
 void MPU6050_Init(void); 			//MPU6050初始化配置参数

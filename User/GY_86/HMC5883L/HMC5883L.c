@@ -14,7 +14,7 @@
 
 int16_t HMC5883L_X = 0,HMC5883L_Y = 0,HMC5883L_Z = 0;
 int16_t HMC5883L_X_offset = 0,HMC5883L_Y_offset = 0,HMC5883L_Z_offset = 0;
-double HMC5883L_angle = 0;
+float HMC5883L_angle = 0;
 
 void HMC5883L_Init(void)
 {
@@ -63,12 +63,13 @@ void Read_HMC5883L(void)//¶ÁÈ¡
 		HMC5883L_Y -= 0xffff;
 	if (HMC5883L_Z > 0x7fff)
 		HMC5883L_Z -= 0xffff;
-	HMC5883L_angle = atan2((double)HMC5883L_Y, (double)HMC5883L_X) * (180 / 3.14159265) + 180; // angle in degrees
+	HMC5883L_angle = (float)atan2f((float)HMC5883L_Y, (float)HMC5883L_X) * (180 / 3.14159265) + 180; // angle in degrees
 	HMC5883L_angle=HMC5883L_angle+100;
 	if(HMC5883L_angle>360)
 		HMC5883L_angle=HMC5883L_angle-360;
 
-	stQuadrotor_State.HMC5883L_Angle = (int16_t)(HMC5883L_angle * 10);
+	stQuadrotor_State.HMC5883L_Angle = HMC5883L_angle;
+	stQuadrotor_State_DMA_BUFF = stQuadrotor_State;
 }
 
 void HMC5883L_SetOffset(void)

@@ -22,7 +22,7 @@
 
 extern int16_t HMC5883L_X,HMC5883L_Y,HMC5883L_Z;
 extern int16_t HMC5883L_X_offset,HMC5883L_Y_offset,HMC5883L_Z_offset;
-extern double HMC5883L_angle;
+extern float HMC5883L_angle;
 
 void HMC5883L_Init(void);			//模块初始化，配置相关寄存器
 void Read_HMC5883L(void);			//读取磁场数据

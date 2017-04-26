@@ -144,6 +144,7 @@ void USART1_IRQHandler()
 					stQuadrotor_State.Elev = 1500;
 				}
 				stQuadrotor_State.Thro = 1100 + USART_ReceiveData(USART1) * 8;
+				stQuadrotor_State_DMA_BUFF = stQuadrotor_State;
 				//DMA_Buff_In_16(REC_THRO,THRO_INDEX);
 
 				//USART_ClearFlag(USART1,USART_FLAG_RXNE);
@@ -161,6 +162,7 @@ void USART1_IRQHandler()
 //				}
 
 				stQuadrotor_State.Rudd = 1100 + USART_ReceiveData(USART1) * 8;
+				stQuadrotor_State_DMA_BUFF = stQuadrotor_State;
 				//DMA_Buff_In_16(REC_THRO,THRO_INDEX);
 
 				//USART_ClearFlag(USART1,USART_FLAG_RXNE);
@@ -178,6 +180,7 @@ void USART1_IRQHandler()
 //				}
 
 				stQuadrotor_State.Elev = 1100 + USART_ReceiveData(USART1) * 8;
+				stQuadrotor_State_DMA_BUFF = stQuadrotor_State;
 				//DMA_Buff_In_16(REC_THRO,THRO_INDEX);
 
 				//USART_ClearFlag(USART1,USART_FLAG_RXNE);
@@ -195,6 +198,7 @@ void USART1_IRQHandler()
 //				}
 
 				stQuadrotor_State.Aile = 1100 + USART_ReceiveData(USART1) * 8;
+				stQuadrotor_State_DMA_BUFF = stQuadrotor_State;
 				//DMA_Buff_In_16(REC_THRO,THRO_INDEX);
 
 				//USART_ClearFlag(USART1,USART_FLAG_RXNE);
@@ -213,6 +217,7 @@ void USART1_IRQHandler()
 				set_motorPWM(2,stQuadrotor_State.Thro);
 				set_motorPWM(3,stQuadrotor_State.Thro);
 				set_motorPWM(4,stQuadrotor_State.Thro);
+				stQuadrotor_State_DMA_BUFF = stQuadrotor_State;
 				break;
 			}
 			case 8:
@@ -220,6 +225,7 @@ void USART1_IRQHandler()
 				stQuadrotor_State.Aile = 1500;
 				stQuadrotor_State.Elev = 1500;
 				stQuadrotor_State.Rudd = 1500;
+				stQuadrotor_State_DMA_BUFF = stQuadrotor_State;
 				break;
 			}
 
@@ -456,181 +462,182 @@ void USART1_IRQHandler()
 			{
 				stQuadrotor_State.Check_State = 0xFFFF;
 				stQuadrotor_State.Check_Data = 0xFFFF;
+				stQuadrotor_State_DMA_BUFF = stQuadrotor_State;
 				break;
 			}
 			//检查MPU6050校正数据
 			case 25:
 			{
-				stQuadrotor_State.Check_State = 0xFFFF;
 				stQuadrotor_State.Check_Data = Accel_offset_X;
 				stQuadrotor_State.Check_State = ReceiveOrder;
+				stQuadrotor_State_DMA_BUFF = stQuadrotor_State;
 				break;
 			}
 			case 26:
 			{
-				stQuadrotor_State.Check_State = 0xFFFF;
 				stQuadrotor_State.Check_Data = Accel_offset_Y;
 				stQuadrotor_State.Check_State = ReceiveOrder;
+				stQuadrotor_State_DMA_BUFF = stQuadrotor_State;
 				break;
 			}
 			case 27:
 			{
-				stQuadrotor_State.Check_State = 0xFFFF;
 				stQuadrotor_State.Check_Data = Accel_offset_Z;
 				stQuadrotor_State.Check_State = ReceiveOrder;
+				stQuadrotor_State_DMA_BUFF = stQuadrotor_State;
 				break;
 			}
 			case 28:
 			{
-				stQuadrotor_State.Check_State = 0xFFFF;
 				stQuadrotor_State.Check_Data = Gyro_offset_X;
 				stQuadrotor_State.Check_State = ReceiveOrder;
+				stQuadrotor_State_DMA_BUFF = stQuadrotor_State;
 				break;
 			}
 			case 29:
 			{
-				stQuadrotor_State.Check_State = 0xFFFF;
 				stQuadrotor_State.Check_Data = Gyro_offset_Y;
 				stQuadrotor_State.Check_State = ReceiveOrder;
+				stQuadrotor_State_DMA_BUFF = stQuadrotor_State;
 				break;
 			}
 			case 30:
 			{
-				stQuadrotor_State.Check_State = 0xFFFF;
 				stQuadrotor_State.Check_Data = Gyro_offset_Z;
 				stQuadrotor_State.Check_State = ReceiveOrder;
+				stQuadrotor_State_DMA_BUFF = stQuadrotor_State;
 				break;
 			}
 			//检查HMC5883L校正数据
 			case 31:
 			{
-				stQuadrotor_State.Check_State = 0xFFFF;
 				stQuadrotor_State.Check_Data = HMC5883L_X_offset;
 				stQuadrotor_State.Check_State = ReceiveOrder;
+				stQuadrotor_State_DMA_BUFF = stQuadrotor_State;
 				break;
 			}
 			case 32:
 			{
-				stQuadrotor_State.Check_State = 0xFFFF;
 				stQuadrotor_State.Check_Data = HMC5883L_Y_offset;
 				stQuadrotor_State.Check_State = ReceiveOrder;
+				stQuadrotor_State_DMA_BUFF = stQuadrotor_State;
 				break;
 			}
 			case 33:
 			{
-				stQuadrotor_State.Check_State = 0xFFFF;
 				stQuadrotor_State.Check_Data = HMC5883L_Z_offset;
 				stQuadrotor_State.Check_State = ReceiveOrder;
+				stQuadrotor_State_DMA_BUFF = stQuadrotor_State;
 				break;
 			}
 			//检查PID
 			case 34:
 			{
-				stQuadrotor_State.Check_State = 0xFFFF;
 				stQuadrotor_State.Check_Data = Roll.Gyro_Kp * 100;
 				stQuadrotor_State.Check_State = ReceiveOrder;
+				stQuadrotor_State_DMA_BUFF = stQuadrotor_State;
 				break;
 			}
 			case 35:
 			{
-				stQuadrotor_State.Check_State = 0xFFFF;
 				stQuadrotor_State.Check_Data = Roll.Gyro_Ki * 100;
 				stQuadrotor_State.Check_State = ReceiveOrder;
+				stQuadrotor_State_DMA_BUFF = stQuadrotor_State;
 				break;
 			}
 			case 36:
 			{
-				stQuadrotor_State.Check_State = 0xFFFF;
 				stQuadrotor_State.Check_Data = Roll.Gyro_Kd * 100;
 				stQuadrotor_State.Check_State = ReceiveOrder;
+				stQuadrotor_State_DMA_BUFF = stQuadrotor_State;
 				break;
 			}
 
 			case 37:
 			{
-				stQuadrotor_State.Check_State = 0xFFFF;
 				stQuadrotor_State.Check_Data = Roll.angle_Kp * 100;
 				stQuadrotor_State.Check_State = ReceiveOrder;
+				stQuadrotor_State_DMA_BUFF = stQuadrotor_State;
 				break;
 			}
 			case 38:
 			{
-				stQuadrotor_State.Check_State = 0xFFFF;
 				stQuadrotor_State.Check_Data = Roll.angle_Ki * 100;
 				stQuadrotor_State.Check_State = ReceiveOrder;
+				stQuadrotor_State_DMA_BUFF = stQuadrotor_State;
 				break;
 			}
 			case 39:
 			{
-				stQuadrotor_State.Check_State = 0xFFFF;
 				stQuadrotor_State.Check_Data = Roll.angle_Kd * 100;
 				stQuadrotor_State.Check_State = ReceiveOrder;
+				stQuadrotor_State_DMA_BUFF = stQuadrotor_State;
 				break;
 			}
 			/******************************Pitch*********************************/
 			case 40:
 			{
-				stQuadrotor_State.Check_State = 0xFFFF;
 				stQuadrotor_State.Check_Data = Pitch.Gyro_Kp * 100;
 				stQuadrotor_State.Check_State = ReceiveOrder;
+				stQuadrotor_State_DMA_BUFF = stQuadrotor_State;
 				break;
 			}
 			case 41:
 			{
-				stQuadrotor_State.Check_State = 0xFFFF;
 				stQuadrotor_State.Check_Data = Pitch.Gyro_Ki * 100;
 				stQuadrotor_State.Check_State = ReceiveOrder;
+				stQuadrotor_State_DMA_BUFF = stQuadrotor_State;
 				break;
 			}
 			case 42:
 			{
-				stQuadrotor_State.Check_State = 0xFFFF;
 				stQuadrotor_State.Check_Data = Pitch.Gyro_Kd * 100;
 				stQuadrotor_State.Check_State = ReceiveOrder;
+				stQuadrotor_State_DMA_BUFF = stQuadrotor_State;
 				break;
 			}
 
 			case 43:
 			{
-				stQuadrotor_State.Check_State = 0xFFFF;
 				stQuadrotor_State.Check_Data = Pitch.angle_Kp * 100;
 				stQuadrotor_State.Check_State = ReceiveOrder;
+				stQuadrotor_State_DMA_BUFF = stQuadrotor_State;
 				break;
 			}
 			case 44:
 			{
-				stQuadrotor_State.Check_State = 0xFFFF;
 				stQuadrotor_State.Check_Data = Pitch.angle_Ki * 100;
 				stQuadrotor_State.Check_State = ReceiveOrder;
+				stQuadrotor_State_DMA_BUFF = stQuadrotor_State;
 				break;
 			}
 			case 45:
 			{
-				stQuadrotor_State.Check_State = 0xFFFF;
 				stQuadrotor_State.Check_Data = Pitch.angle_Kd * 100;
 				stQuadrotor_State.Check_State = ReceiveOrder;
+				stQuadrotor_State_DMA_BUFF = stQuadrotor_State;
 				break;
 			}
 			/****************Yaw*************************/
 			case 46:
 			{
-				stQuadrotor_State.Check_State = 0xFFFF;
 				stQuadrotor_State.Check_Data = Yaw.Gyro_Kp * 100;
 				stQuadrotor_State.Check_State = ReceiveOrder;
+				stQuadrotor_State_DMA_BUFF = stQuadrotor_State;
 				break;
 			}
 			case 47:
 			{
-				stQuadrotor_State.Check_State = 0xFFFF;
 				stQuadrotor_State.Check_Data = Yaw.Gyro_Ki * 100;
 				stQuadrotor_State.Check_State = ReceiveOrder;
+				stQuadrotor_State_DMA_BUFF = stQuadrotor_State;
 				break;
 			}
 			case 48:
 			{
-				stQuadrotor_State.Check_State = 0xFFFF;
 				stQuadrotor_State.Check_Data = Yaw.Gyro_Kd * 100;
 				stQuadrotor_State.Check_State = ReceiveOrder;
+				stQuadrotor_State_DMA_BUFF = stQuadrotor_State;
 				break;
 			}
 

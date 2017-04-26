@@ -345,7 +345,7 @@
               <MiscControls></MiscControls>
               <Define>STM32F10X_HD,USE_STDPERIPH_DRIVER</Define>
               <Undefine></Undefine>
-              <IncludePath>..\Libraries\CMSIS;..\Libraries\FWLIB\inc;..\Libraries\FWLIB\src;..\User;..\User\Setup;..\User\USART;..\User\Delay;..\User\TIMER;..\User\I2C_2.0;..\User\EEPROOM;..\User\GY_86\MPU6050;..\User\GY_86\MS5611;..\User\GY_86\HMC5883L;..\User\DMA;..\User\IMU;..\User\PID;..\User\filter;..\User\KS10X</IncludePath>
+              <IncludePath>..\Libraries\CMSIS;..\Libraries\FWLIB\inc;..\Libraries\FWLIB\src;..\User;..\User\Setup;..\User\USART;..\User\Delay;..\User\TIMER;..\User\I2C_2.0;..\User\EEPROOM;..\User\GY_86\MPU6050;..\User\GY_86\MS5611;..\User\GY_86\HMC5883L;..\User\DMA;..\User\IMU;..\User\PID;..\User\filter;..\User\KS10X;..\User\GY_86\MPU6050\DMP\DMP;..\User\GY_86\MPU6050\DMP\IIC;..\User\GY_86\MPU6050\DMP\MPU6050</IncludePath>
             </VariousControls>
           </Cads>
           <Aads>
@@ -542,6 +542,26 @@
               <FileName>KS10X.c</FileName>
               <FileType>1</FileType>
               <FilePath>..\User\KS10X\KS10X.c</FilePath>
+            </File>
+            <File>
+              <FileName>IOI2C.c</FileName>
+              <FileType>1</FileType>
+              <FilePath>..\User\GY_86\MPU6050\DMP\IIC\IOI2C.c</FilePath>
+            </File>
+            <File>
+              <FileName>MPU6050_DMP.c</FileName>
+              <FileType>1</FileType>
+              <FilePath>..\User\GY_86\MPU6050\DMP\MPU6050\MPU6050_DMP.c</FilePath>
+            </File>
+            <File>
+              <FileName>inv_mpu.c</FileName>
+              <FileType>1</FileType>
+              <FilePath>..\User\GY_86\MPU6050\DMP\DMP\inv_mpu.c</FilePath>
+            </File>
+            <File>
+              <FileName>inv_mpu_dmp_motion_driver.c</FileName>
+              <FileType>1</FileType>
+              <FilePath>..\User\GY_86\MPU6050\DMP\DMP\inv_mpu_dmp_motion_driver.c</FilePath>
             </File>
           </Files>
         </Group>

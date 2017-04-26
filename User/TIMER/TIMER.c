@@ -7,7 +7,7 @@
 #include "MS5611.h"
 #include "PID.h"
 #include "KS10X.h"
-
+#include "MPU6050_DMP.h"
 static TIM_ICInitTypeDef  TIM_ICInitStructure = { 0 };
 
 TIM_OCInitTypeDef PWM_TIM_OCInitStructure = { 0 };
@@ -109,6 +109,7 @@ void set_motorPWM(u8 motor,u16 motorPWM)
 		}
 		default:break;
 	}
+	stQuadrotor_State_DMA_BUFF = stQuadrotor_State;
    //TIM_ARRPreloadConfig(TIM2,ENABLE);
 	TIM_CtrlPWMOutputs(TIM2, ENABLE);
 }
@@ -260,7 +261,7 @@ void TIM3_IRQHandler(void)
             }													   
         }
     }
-
+	stQuadrotor_State_DMA_BUFF = stQuadrotor_State;
 
 }
 
@@ -270,9 +271,13 @@ void TIM4_IRQHandler(void)   //TIM4中断
 	{
 		TIM_ClearITPendingBit(TIM4, TIM_IT_Update);  //清除TIM4更新中断标志
 
-		AHRSupdate( );				//10ms一次姿态更新
-	
-
+		//AHRSupdate( );				//10ms一次姿态更新
+		Read_DMP();
+	   stQuadrotor_State.Roll = Dmp_Roll;
+	   stQuadrotor_State.Pitch = Dmp_Pitch;
+	   stQuadrotor_State.Yaw = Dmp_Yaw;
+	   stQuadrotor_State_DMA_BUFF = stQuadrotor_State;
+ 
 		Roll_Set = 50.0 * (stQuadrotor_State.Aile - 1100.0) / 800.0 - 25.0;
 		Pitch_Set = -(50.0 * (stQuadrotor_State.Elev - 1100.0) / 800.0 - 25.0);
 		Yaw_Set =  -(100.0 * (stQuadrotor_State.Rudd - 1100.0) / 800.0 - 50.0);

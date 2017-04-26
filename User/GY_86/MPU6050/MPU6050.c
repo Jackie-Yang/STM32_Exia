@@ -12,7 +12,7 @@ int16_t Gyro_offset_X = 0,Gyro_offset_Y = 0,Gyro_offset_Z = 0;
 int16_t MPU6050_Accel_X = 0,MPU6050_Accel_Y = 0,MPU6050_Accel_Z = 0;
 int16_t Accel_offset_X = 0,Accel_offset_Y = 0,Accel_offset_Z = 0;
 
-int16_t MPU6050_Temperature = 0;
+float MPU6050_Temperature = 0;
 
 
 
@@ -104,6 +104,7 @@ void READ_MPU6050_Accel(void)
 		MPU6050_Accel_Z = MPU6050_Accel_Z + Accel_offset_Z;
 	}
 	stQuadrotor_State.Accel_Z = MPU6050_Accel_Z;
+	stQuadrotor_State_DMA_BUFF = stQuadrotor_State;
 }
 
 
@@ -139,6 +140,7 @@ void READ_MPU6050_Gyro(void)
 		MPU6050_Gyro_Z = MPU6050_Gyro_Z + Gyro_offset_Z;
 	}
 	stQuadrotor_State.Gyro_Z = MPU6050_Gyro_Z;
+	stQuadrotor_State_DMA_BUFF = stQuadrotor_State;
 }
 
 
@@ -198,9 +200,9 @@ void MPU6050_SetOffset(void)
 
 void READ_MPU6050_TEMP(void)
 {	
-	MPU6050_Temperature = I2C_Read_16( MPU6050_Addr,TEMP_OUT_H );
+	MPU6050_Temperature = I2C_Read_16( MPU6050_Addr,TEMP_OUT_H ) / 340.0 + 36.53;
 	stQuadrotor_State.MPU6050_Temp = MPU6050_Temperature;
-  //计算温度暂时交给上位机
+	stQuadrotor_State_DMA_BUFF = stQuadrotor_State;
 }
 
 

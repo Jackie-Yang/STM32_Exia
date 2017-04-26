@@ -67,7 +67,8 @@ void KS10X_Get_High(void)
 	if(result < 0x2c10)					//防止超过11.280m(最大值)
 	{
 		KS10X_high = result;
-		stQuadrotor_State.KS10X_High = KS10X_high;
+		stQuadrotor_State.KS10X_High = KS10X_high;		//返回的值为毫米
+		stQuadrotor_State_DMA_BUFF = stQuadrotor_State;
 	}	
 	delay_us(80);
 	KS10X_command(0xbc);	   //发送指令，让传感器探测

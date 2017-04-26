@@ -11,10 +11,12 @@
 #include "PID.h"
 #include "KS10X.h"
 #include "string.h"
+#include "MPU6050_DMP.h"
 
 //存放要存进Flash的数据的Flash虚拟地址
 uint16_t VirtAddVarTab[ ] = {OFFSET_AX_ADDR,OFFSET_AY_ADDR,OFFSET_AZ_ADDR,OFFSET_GX_ADDR,OFFSET_GY_ADDR,OFFSET_GZ_ADDR,HMC5883L_OFFSET_X_ADDR,HMC5883L_OFFSET_Y_ADDR,HMC5883L_OFFSET_Z_ADDR,ROLL_GYRO_KP_ADDR,ROLL_GYRO_KI_ADDR,ROLL_GYRO_KD_ADDR,ROLL_ANGLE_KP_ADDR,ROLL_ANGLE_KI_ADDR,ROLL_ANGLE_KD_ADDR,PITCH_GYRO_KP_ADDR,PITCH_GYRO_KI_ADDR,PITCH_GYRO_KD_ADDR,PITCH_ANGLE_KP_ADDR,PITCH_ANGLE_KI_ADDR,PITCH_ANGLE_KD_ADDR,YAW_GYRO_KP_ADDR,YAW_GYRO_KI_ADDR,YAW_GYRO_KD_ADDR};
 Quadrotor_State stQuadrotor_State = {0};
+Quadrotor_State stQuadrotor_State_DMA_BUFF = {0};
 
 
 /********************系统初始化,所有模块初始化函数的集合****************************/
@@ -27,11 +29,14 @@ void init(void)
 	USART_Configuration( );		
 
 	memset(&stQuadrotor_State, 0, sizeof(stQuadrotor_State));
-	stQuadrotor_State.DataHead = 0xFF7F;
-	stQuadrotor_State.DataSize = sizeof(stQuadrotor_State) - 8;
+	stQuadrotor_State.DataHead1 = 0xFF;
+	stQuadrotor_State.DataHead2 = 0x7F;
+	stQuadrotor_State.DataSize = sizeof(stQuadrotor_State);
 	stQuadrotor_State.DataCheckValue = 123;
 	stQuadrotor_State.DataEnd = 0xFEFF;
-	DMA_Configuration(&stQuadrotor_State, sizeof(stQuadrotor_State));
+
+	stQuadrotor_State_DMA_BUFF = stQuadrotor_State;
+	DMA_Configuration(&stQuadrotor_State_DMA_BUFF, sizeof(stQuadrotor_State_DMA_BUFF));
 		  	
 	TIM2_Init( );
 	TIM3_Init();	  
@@ -43,7 +48,11 @@ void init(void)
 	NVIC_Configuration( );	
 	EXIT_Configuration( );
 
-	MPU6050_Init(); //初始化MPU6050	 
+	//MPU6050_Init(); //初始化MPU6050	 
+	MPU6050_initialize();
+	DMP_Init();
+	
+
 	MS5611_Init();	
 	HMC5883L_Init();
 	
