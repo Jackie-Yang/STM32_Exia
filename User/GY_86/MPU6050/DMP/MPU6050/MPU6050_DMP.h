@@ -1,10 +1,8 @@
 #ifndef __MPU6050_H
 #define __MPU6050_H
 
-// #include "sys.h"
 #include "stdint.h"
-#define devAddr  0xD0
-
+#define	MPU6050_Addr   0xD0	  //定义器件在IIC总线中的从地址(已经左移一位) 
 #define MPU6050_ADDRESS_AD0_LOW     0x68 // address pin low (GND), default for InvenSense evaluation board
 #define MPU6050_ADDRESS_AD0_HIGH    0x69 // address pin high (VCC)
 #define MPU6050_DEFAULT_ADDRESS     MPU6050_ADDRESS_AD0_LOW

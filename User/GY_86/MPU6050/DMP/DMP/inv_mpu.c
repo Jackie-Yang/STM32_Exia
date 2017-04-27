@@ -15,10 +15,11 @@
 // #include <sys.h>
 #include "delay.h"
 // #include "usart.h"
-#include "IOI2C.h"
+#include "I2C.h"
 #include "string.h"
 #include "inv_mpu.h"
 #include "math.h"
+#include <stdlib.h>
 
 /* The following functions must be defined for this platform:
  * i2c_write(unsigned char slave_addr, unsigned char reg_addr,
@@ -41,8 +42,8 @@
 #include "msp430_clock.h"
 #include "msp430_interrupt.h" */
 
-#define i2c_write   i2cWrite
-#define i2c_read    i2cRead
+#define i2c_write   I2C_SendBytes
+#define i2c_read    I2C_ReadBytes
 #define delay_ms    delay_ms
 #define get_ms      myget_ms
 
@@ -503,7 +504,7 @@ const struct hw_s hw = {
 };
 */
 const struct hw_s hw={
-  0x68,	 //addr
+  MPU6050_Addr,	 //addr
   1024,	 //max_fifo
   118,	 //num_reg
   340,	 //temp_sens

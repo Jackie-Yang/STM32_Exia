@@ -1,5 +1,5 @@
 #include "MPU6050_DMP.h"
-#include "IOI2C.h"
+#include "I2C.h"
 // #include "usart.h"
 #include "inv_mpu.h"
 #include "inv_mpu_dmp_motion_driver.h"
@@ -11,7 +11,7 @@
 #define GYRO_ON         (0x02)
 #define MOTION          (0)
 #define NO_MOTION       (1)
-#define DEFAULT_MPU_HZ  (200)
+#define DEFAULT_MPU_HZ  (500)
 #define FLASH_SIZE      (512)
 #define FLASH_MEM_START ((void*)0x1800)
 #define q30  1073741824.0f
@@ -85,8 +85,6 @@ static void run_self_test(void)
 }
 
 
-
-uint8_t buffer[14];
 
 int16_t  MPU6050_FIFO[6][11];
 int16_t Gx_offset=0,Gy_offset=0,Gz_offset=0;
@@ -168,11 +166,11 @@ MPU6050_FIFO[5][10]=sum/10;
  * 7       | Stops the clock and keeps the timing generator in reset
 *******************************************************************************/
 void MPU6050_setClockSource(uint8_t source){
-    IICwriteBits(devAddr, MPU6050_RA_PWR_MGMT_1, MPU6050_PWR1_CLKSEL_BIT, MPU6050_PWR1_CLKSEL_LENGTH, source);
+    I2C_WriteBits(MPU6050_Addr, MPU6050_RA_PWR_MGMT_1, MPU6050_PWR1_CLKSEL_BIT, MPU6050_PWR1_CLKSEL_LENGTH, source);
 
 }
 
-/** Set full-scale gyroscope range.
+/** Set full-scale gyroscope range.陀螺仪最大量程
  * @param range New full-scale gyroscope range value
  * @see getFullScaleRange()
  * @see MPU6050_GYRO_FS_250
@@ -181,7 +179,7 @@ void MPU6050_setClockSource(uint8_t source){
  * @see MPU6050_GCONFIG_FS_SEL_LENGTH
  */
 void MPU6050_setFullScaleGyroRange(uint8_t range) {
-    IICwriteBits(devAddr, MPU6050_RA_GYRO_CONFIG, MPU6050_GCONFIG_FS_SEL_BIT, MPU6050_GCONFIG_FS_SEL_LENGTH, range);
+    I2C_WriteBits(MPU6050_Addr, MPU6050_RA_GYRO_CONFIG, MPU6050_GCONFIG_FS_SEL_BIT, MPU6050_GCONFIG_FS_SEL_LENGTH, range);
 }
 
 /**************************实现函数********************************************
@@ -189,7 +187,7 @@ void MPU6050_setFullScaleGyroRange(uint8_t range) {
 *功　　能:	    设置  MPU6050 加速度计的最大量程
 *******************************************************************************/
 void MPU6050_setFullScaleAccelRange(uint8_t range) {
-    IICwriteBits(devAddr, MPU6050_RA_ACCEL_CONFIG, MPU6050_ACONFIG_AFS_SEL_BIT, MPU6050_ACONFIG_AFS_SEL_LENGTH, range);
+    I2C_WriteBits(MPU6050_Addr, MPU6050_RA_ACCEL_CONFIG, MPU6050_ACONFIG_AFS_SEL_BIT, MPU6050_ACONFIG_AFS_SEL_LENGTH, range);
 }
 
 /**************************实现函数********************************************
@@ -199,17 +197,16 @@ void MPU6050_setFullScaleAccelRange(uint8_t range) {
 			    enabled =0   工作
 *******************************************************************************/
 void MPU6050_setSleepEnabled(uint8_t enabled) {
-    IICwriteBit(devAddr, MPU6050_RA_PWR_MGMT_1, MPU6050_PWR1_SLEEP_BIT, enabled);
+    I2C_WriteBit(MPU6050_Addr, MPU6050_RA_PWR_MGMT_1, MPU6050_PWR1_SLEEP_BIT, enabled);
 }
 
 /**************************实现函数********************************************
 *函数原型:		uint8_t MPU6050_getDeviceID(void)
 *功　　能:	    读取  MPU6050 WHO_AM_I 标识	 将返回 0x68
 *******************************************************************************/
-uint8_t MPU6050_getDeviceID(void) {
-
-    IICreadBytes(devAddr, MPU6050_RA_WHO_AM_I, 1, buffer);
-    return buffer[0];
+uint8_t MPU6050_getDeviceID(void) 
+{
+    return I2C_ReadByte(MPU6050_Addr,MPU6050_RA_WHO_AM_I);
 }
 
 /**************************实现函数********************************************
@@ -227,7 +224,7 @@ uint8_t MPU6050_testConnection(void) {
 *功　　能:	    设置 MPU6050 是否为AUX I2C线的主机
 *******************************************************************************/
 void MPU6050_setI2CMasterModeEnabled(uint8_t enabled) {
-    IICwriteBit(devAddr, MPU6050_RA_USER_CTRL, MPU6050_USERCTRL_I2C_MST_EN_BIT, enabled);
+    I2C_WriteBit(MPU6050_Addr, MPU6050_RA_USER_CTRL, MPU6050_USERCTRL_I2C_MST_EN_BIT, enabled);
 }
 
 /**************************实现函数********************************************
@@ -235,7 +232,7 @@ void MPU6050_setI2CMasterModeEnabled(uint8_t enabled) {
 *功　　能:	    设置 MPU6050 是否为AUX I2C线的主机
 *******************************************************************************/
 void MPU6050_setI2CBypassEnabled(uint8_t enabled) {
-    IICwriteBit(devAddr, MPU6050_RA_INT_PIN_CFG, MPU6050_INTCFG_I2C_BYPASS_EN_BIT, enabled);
+    I2C_WriteBit(MPU6050_Addr, MPU6050_RA_INT_PIN_CFG, MPU6050_INTCFG_I2C_BYPASS_EN_BIT, enabled);
 }
 
 /**************************实现函数********************************************
@@ -243,12 +240,12 @@ void MPU6050_setI2CBypassEnabled(uint8_t enabled) {
 *功　　能:	    初始化 	MPU6050 以进入可用状态。
 *******************************************************************************/
 void MPU6050_initialize(void) {
-    MPU6050_setClockSource(MPU6050_CLOCK_PLL_YGYRO); //设置时钟
+    MPU6050_setClockSource(MPU6050_CLOCK_INTERNAL); //设置时钟，内置时钟源 (默认)
     MPU6050_setFullScaleGyroRange(MPU6050_GYRO_FS_2000);//陀螺仪最大量程 +-1000度每秒
     MPU6050_setFullScaleAccelRange(MPU6050_ACCEL_FS_2);	//加速度度最大量程 +-2G
     MPU6050_setSleepEnabled(0); //进入工作状态
-	 MPU6050_setI2CMasterModeEnabled(0);	 //不让MPU6050 控制AUXI2C
-	 MPU6050_setI2CBypassEnabled(0);	 //主控制器的I2C与	MPU6050的AUXI2C	直通。控制器可以直接访问HMC5883L
+	MPU6050_setI2CMasterModeEnabled(0);	 //不让MPU6050 控制AUXI2C
+	MPU6050_setI2CBypassEnabled(0);	 //主控制器的I2C与	MPU6050的AUXI2C	直通。控制器可以直接访问HMC5883L
 }
 
 
@@ -258,14 +255,14 @@ void MPU6050_initialize(void) {
 函数功能：MPU6050内置DMP的初始化
 入口参数：无
 返回  值：无
-作    者：平衡小车之家
 **************************************************************************/
 void DMP_Init(void)
 { 
-   u8 temp[1]={0};
-   i2cRead(0x68,0x75,1,temp);
-	//  printf("mpu_set_sensor complete ......\r\n");
-	if(temp[0]!=0x68)NVIC_SystemReset();
+	if(I2C_ReadByte(MPU6050_Addr,0x75) != 0x68)
+    {
+        NVIC_SystemReset();
+    }
+    //  printf("mpu_set_sensor complete ......\r\n");
 	if(!mpu_init())
   {
 	  if(!mpu_set_sensors(INV_XYZ_GYRO | INV_XYZ_ACCEL))
@@ -305,7 +302,6 @@ void DMP_Init(void)
 函数功能：读取MPU6050内置DMP的姿态信息
 入口参数：无
 返回  值：无
-作    者：平衡小车之家
 **************************************************************************/
 void Read_DMP(void)
 {	
@@ -330,12 +326,11 @@ void Read_DMP(void)
 函数功能：读取MPU6050内置温度传感器数据
 入口参数：无
 返回  值：摄氏温度
-作    者：平衡小车之家
 **************************************************************************/
 int Read_Temperature(void)
 {	   
 	  float Temp;
-	  Temp=(I2C_ReadOneByte(devAddr,MPU6050_RA_TEMP_OUT_H)<<8)+I2C_ReadOneByte(devAddr,MPU6050_RA_TEMP_OUT_L);
+	  Temp=(I2C_ReadByte(MPU6050_Addr,MPU6050_RA_TEMP_OUT_H)<<8)+I2C_ReadByte(MPU6050_Addr,MPU6050_RA_TEMP_OUT_L);
 		if(Temp>32768) Temp-=65536;
 		Temp=(36.53+Temp/340)*10;
 	  return (int)Temp;
