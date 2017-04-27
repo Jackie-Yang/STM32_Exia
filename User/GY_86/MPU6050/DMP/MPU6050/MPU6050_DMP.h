@@ -355,9 +355,9 @@
 extern	short gyro[3], accel[3];
 extern int16_t Gx_offset,Gy_offset,Gz_offset;
 extern float Acc1G_Values;
-extern float Dmp_Pitch;
-extern float Dmp_Roll;
-extern float Dmp_Yaw;
+// extern float Dmp_Pitch;
+// extern float Dmp_Roll;
+// extern float Dmp_Yaw;
 //供外部调用的API
 void MPU6050_initialize(void); //初始化
 uint8_t MPU6050_testConnection(void); //检测MPU6050是否存在

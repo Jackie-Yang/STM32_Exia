@@ -48,9 +48,9 @@ void init(void)
 	NVIC_Configuration( );	
 	EXIT_Configuration( );
 
-	MPU6050_Init(); //初始化MPU6050	 
-	// MPU6050_initialize();
-	// DMP_Init();
+	// MPU6050_Init(); //初始化MPU6050	 
+	MPU6050_initialize();
+	DMP_Init();
 	
 
 	MS5611_Init();	

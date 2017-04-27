@@ -4,6 +4,8 @@
 #include "inv_mpu.h"
 #include "inv_mpu_dmp_motion_driver.h"
 #include "math.h"
+#include "Setup.h"
+#include "PID.h"
 #define PRINT_ACCEL     (0x01)
 #define PRINT_GYRO      (0x02)
 #define PRINT_QUAT      (0x04)
@@ -16,9 +18,9 @@
 #define FLASH_MEM_START ((void*)0x1800)
 #define q30  1073741824.0f
 short gyro[3], accel[3], sensors;
-float Dmp_Pitch;
-float Dmp_Roll;
-float Dmp_Yaw;
+// float Dmp_Pitch;
+// float Dmp_Roll;
+// float Dmp_Yaw;
 float dmp_q0=1.0f,dmp_q1=0.0f,dmp_q2=0.0f,dmp_q3=0.0f;
 static signed char gyro_orientation[9] = {-1, 0, 0,
                                            0,-1, 0,
@@ -316,9 +318,28 @@ void Read_DMP(void)
 					 dmp_q1=quat[1] / q30;
 					 dmp_q2=quat[2] / q30;
 					 dmp_q3=quat[3] / q30;
-					 Dmp_Pitch = asin(-2 * dmp_q1 * dmp_q3 + 2 * dmp_q0* dmp_q2)* 57.3; 
-                     Dmp_Roll = atan2(2 * dmp_q2 * dmp_q3 + 2 * dmp_q0 * dmp_q1, -2 * dmp_q1 * dmp_q1 - 2 * dmp_q2* dmp_q2 + 1)* 57.3; // roll
-		             Dmp_Yaw = 	atan2(2*(dmp_q1*dmp_q2 + dmp_q0*dmp_q3),dmp_q0*dmp_q0+dmp_q1*dmp_q1-dmp_q2*dmp_q2-dmp_q3*dmp_q3) * 57.3;	
+                     stQuadrotor_State.Accel_X = accel[0];
+                     stQuadrotor_State.Accel_Y = accel[1];
+                     stQuadrotor_State.Accel_Z = accel[2];
+
+                     stQuadrotor_State.Gyro_X = -gyro[0];
+                     stQuadrotor_State.Gyro_Y = -gyro[1];
+                     stQuadrotor_State.Gyro_Z = gyro[2];
+
+                     Pitch.Gyro_cur = (float)stQuadrotor_State.Gyro_X / 16.4;
+	                 Roll.Gyro_cur = (float)stQuadrotor_State.Gyro_Y / 16.4;
+	                 Yaw.Gyro_cur = (float)stQuadrotor_State.Gyro_Z / 16.4;
+                     
+                     stQuadrotor_State.Roll = -asin(-2 * dmp_q1 * dmp_q3 + 2 * dmp_q0* dmp_q2)* 57.3; 
+                     stQuadrotor_State.Pitch = -atan2(2 * dmp_q2 * dmp_q3 + 2 * dmp_q0 * dmp_q1, -2 * dmp_q1 * dmp_q1 - 2 * dmp_q2* dmp_q2 + 1)* 57.3; // roll
+		             stQuadrotor_State.Yaw = atan2(2*(dmp_q1*dmp_q2 + dmp_q0*dmp_q3),dmp_q0*dmp_q0+dmp_q1*dmp_q1-dmp_q2*dmp_q2-dmp_q3*dmp_q3) * 57.3;
+                     Yaw.angle_cur = stQuadrotor_State.Yaw;
+                     Pitch.angle_cur = stQuadrotor_State.Pitch;
+                     Roll.angle_cur = stQuadrotor_State.Roll;
+                     stQuadrotor_State_DMA_BUFF = stQuadrotor_State;
+					//  Dmp_Pitch = asin(-2 * dmp_q1 * dmp_q3 + 2 * dmp_q0* dmp_q2)* 57.3; 
+                    //  Dmp_Roll = atan2(2 * dmp_q2 * dmp_q3 + 2 * dmp_q0 * dmp_q1, -2 * dmp_q1 * dmp_q1 - 2 * dmp_q2* dmp_q2 + 1)* 57.3; // roll
+		            //  Dmp_Yaw = 	atan2(2*(dmp_q1*dmp_q2 + dmp_q0*dmp_q3),dmp_q0*dmp_q0+dmp_q1*dmp_q1-dmp_q2*dmp_q2-dmp_q3*dmp_q3) * 57.3;	
 				}
 
 }
