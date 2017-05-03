@@ -35,22 +35,24 @@ void HMC5883L_Init(void)
 
 void Read_HMC5883L(void)//读取
 {
+	int16_t X = 0, Y = 0, Z = 0;
 	I2C_SendByte(HMC5883L_Addr,HMC5883L_ConfigurationRegisterA,0x14);   //配置寄存器A：采样平均数1 输出速率30Hz 正常测量
 	I2C_SendByte(HMC5883L_Addr,HMC5883L_ConfigurationRegisterB,0x20);   //配置寄存器B：增益控制
 	I2C_SendByte(HMC5883L_Addr,HMC5883L_ModeRegister,0x00);   //模式寄存器：连续测量模式
-	
 
-	HMC5883L_X=I2C_Read_16(HMC5883L_Addr,HMC5883L_Output_X_MSB) - HMC5883L_X_offset;
+	I2C_ReadBytes_BE(HMC5883L_Addr, HMC5883L_Output_X_MSB, sizeof(X), (uint8_t *)&X);
+	I2C_ReadBytes_BE(HMC5883L_Addr, HMC5883L_Output_Y_MSB, sizeof(Y), (uint8_t *)&Y);
+	I2C_ReadBytes_BE(HMC5883L_Addr, HMC5883L_Output_Z_MSB, sizeof(Z), (uint8_t *)&Z);
 
-	HMC5883L_Y=I2C_Read_16(HMC5883L_Addr,HMC5883L_Output_Y_MSB) - HMC5883L_Y_offset;//OUT_Y_L_A
-	
-  	HMC5883L_Z=I2C_Read_16(HMC5883L_Addr,HMC5883L_Output_Z_MSB) - HMC5883L_Z_offset;//OUT_Z_L_A
+	HMC5883L_X = X - HMC5883L_X_offset;
+	HMC5883L_Y = Y - HMC5883L_Y_offset; //OUT_Y_L_A
+	HMC5883L_Z = Z - HMC5883L_Z_offset; //OUT_Z_L_A
 
-//	Magn_x=Magn_x-X_Offset;
-//	Magn_y=Magn_y-Y_Offset;
-//	Magn_z=Magn_z-Z_Offset;
- // Magn_x=Magn_x;
-//	Magn_y=Magn_y;
+	//	Magn_x=Magn_x-X_Offset;
+	//	Magn_y=Magn_y-Y_Offset;
+	//	Magn_z=Magn_z-Z_Offset;
+	// Magn_x=Magn_x;
+	//	Magn_y=Magn_y;
 	//Magn_y=(Magn_y*HMC5883L_GAIN_Y)/10000;
 
 	stQuadrotor_State.s16_HMC5883L_X = HMC5883L_X;

@@ -146,7 +146,9 @@ void MPU6050_setSleepEnabled(uint8_t enabled)
 *******************************************************************************/
 uint8_t MPU6050_getDeviceID(void) 
 {
-    return I2C_ReadByte(MPU6050_Addr,MPU6050_RA_WHO_AM_I);
+    uint8_t data = 0;
+    I2C_ReadByte(MPU6050_Addr, MPU6050_RA_WHO_AM_I, &data);
+    return data;
 }
 
 /**************************实现函数********************************************
@@ -184,6 +186,10 @@ void MPU6050_setI2CBypassEnabled(uint8_t enabled)
 *******************************************************************************/
 void MPU6050_initialize(void) 
 {
+    // if (!MPU6050_testConnection())   //经常获取错误
+    // {
+    //     NVIC_SystemReset();
+    // }
     MPU6050_setClockSource(MPU6050_CLOCK_INTERNAL); //设置时钟，内置时钟源 (默认)
     MPU6050_setFullScaleGyroRange(MPU6050_GYRO_FS_2000);//陀螺仪最大量程 +-1000度每秒
     MPU6050_setFullScaleAccelRange(MPU6050_ACCEL_FS_2);	//加速度度最大量程 +-2G
@@ -202,10 +208,10 @@ void MPU6050_initialize(void)
 **************************************************************************/
 void DMP_Init(void)
 {
-    if (I2C_ReadByte(MPU6050_Addr, 0x75) != 0x68)
-    {
-        NVIC_SystemReset();
-    }
+    // if (!MPU6050_testConnection())   //经常获取错误
+    // {
+    //     NVIC_SystemReset();
+    // }
     //  printf("mpu_set_sensor complete ......\r\n");
     if (!mpu_init())
     {
@@ -240,6 +246,14 @@ void DMP_Init(void)
         if (!mpu_set_dmp_state(1))
         { //  printf("mpu_set_dmp_state complete ......\r\n");
         }
+        // if (!MPU6050_testConnection())   //经常获取错误
+        // {
+        //     NVIC_SystemReset();
+        // }
+    }
+    else
+    {
+        NVIC_SystemReset();
     }
 }
 /**************************************************************************
@@ -253,7 +267,10 @@ void Read_DMP(void)
     unsigned char more;
     long quat[4];
 
-    dmp_read_fifo(gyro, accel, quat, &sensor_timestamp, &sensors, &more);
+    if(dmp_read_fifo(gyro, accel, quat, &sensor_timestamp, &sensors, &more))
+    {
+        return;
+    }
     if (sensors & INV_WXYZ_QUAT)
     {
         dmp_q0 = quat[0] / q30;
@@ -292,7 +309,10 @@ void Read_DMP(void)
 int Read_Temperature(void)
 {
     float Temp;
-    Temp = (I2C_ReadByte(MPU6050_Addr, MPU6050_RA_TEMP_OUT_H) << 8) + I2C_ReadByte(MPU6050_Addr, MPU6050_RA_TEMP_OUT_L);
+    u8 Temp_H = 0, Temp_L = 0;
+    I2C_ReadByte(MPU6050_Addr, MPU6050_RA_TEMP_OUT_H, &Temp_H);
+    I2C_ReadByte(MPU6050_Addr, MPU6050_RA_TEMP_OUT_L, &Temp_L);
+    Temp = (Temp_H << 8) + Temp_L;
     if (Temp > 32768)
         Temp -= 65536;
     Temp = (36.53 + Temp / 340) * 10;

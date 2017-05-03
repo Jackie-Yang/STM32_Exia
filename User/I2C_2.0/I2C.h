@@ -48,31 +48,27 @@
 //I2C单步操作过程函数				 
 void I2C_Start(void);				//发送I2C开始信号
 void I2C_Stop(void);	  			//发送I2C停止信号
-u8 I2C_Send_Data(u8 data);		//I2C发送数据
+s8 I2C_Send_Data(u8 data);          //I2C发送数据
 u8 I2C_Read_Data(u8 ack);//I2C读取数据
-u8 I2C_Wait_Ack(void); 				//I2C等待ACK信号
+s8 I2C_Wait_Ack(void);   //I2C等待ACK信号
 void I2C_Ack(void);					//I2C发送ACK信号
 void I2C_NAck(void);				//I2C不发送ACK信号
 
-
-void I2C_ReadMode(u8 device_address,u8 address);			  //指定设备指定地址开始I2C读取模式
-void I2C_SendMode(u8 device_address,u8 address);			  //指定设备指定地址开始I2C写入模式
-
-
+s8 I2C_ReadMode(u8 device_address, u8 address);               //指定设备指定地址开始I2C读取模式
+s8 I2C_SendMode(u8 device_address, u8 address);               //指定设备指定地址开始I2C写入模式
 
 //I2C完整操作函数，设备地址需要预留最后一位读写状态位
-void I2C_SendByte(u8 device_address,u8 address,u8 data);	  //向指定设备指定地址发送一个字节数据
-u8 I2C_ReadByte(u8 device_address,u8 address);	  		      //从指定设备指定地址读取一个字节数据
-u8 I2C_SendBytes(u8 device_address, u8 address, uint8_t len, uint8_t *data);   //向某个地址发送多个字节
-u8 I2C_ReadBytes(u8 device_address, u8 address, uint8_t len, uint8_t *buf);
+s8 I2C_SendByte(u8 device_address, u8 address, u8 data);      //向指定设备指定地址发送一个字节数据
+s8 I2C_ReadByte(u8 device_address, u8 address, u8 *data);     //从指定设备指定地址读取一个字节数据
+s8 I2C_SendBytes(u8 device_address, u8 address, uint8_t len, uint8_t *data);   //向某个地址发送多个字节
+s8 I2C_ReadBytes_LE(u8 device_address, u8 address, uint8_t len, uint8_t *buf);
+s8 I2C_ReadBytes_BE(u8 device_address, u8 address, uint8_t len, uint8_t *buf);
 
-void I2C_SendByte_NoAddr(u8 device_address,u8 data);	  	  //向指定设备发送一个字节数据
+s8 I2C_SendByte_NoAddr(u8 device_address, u8 data); //向指定设备发送一个字节数据
 
-u16 I2C_Read_16(u8 device_address,u8 address);				  //从指定设备指定地址读取两个字节数据
-u32 I2C_Read_32(u8 device_address,u8 address);				  //从指定设备指定地址读取两个字节数据
 
-void I2C_WriteBits(u8 device_address, u8 address, u8 bitStart, u8 length, u8 data);
-void I2C_WriteBit(u8 device_address, u8 address, u8 bitNum, u8 data);
+s8 I2C_WriteBits(u8 device_address, u8 address, u8 bitStart, u8 length, u8 data);
+s8 I2C_WriteBit(u8 device_address, u8 address, u8 bitNum, u8 data);
 
 #endif
 

@@ -58,7 +58,7 @@ void init(void)
 	HMC5883L_Init();
 	
 
-	init_quaternion( );			//初始化四元数
+	// init_quaternion( );			//初始化四元数
 	PID_init( );		   		//初始化PID参数，从flash读取
 
 	

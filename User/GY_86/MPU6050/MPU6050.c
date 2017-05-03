@@ -64,7 +64,8 @@ void MPU6050_Init(void)
 
 void MPU6050_WHO_AM_I(void)
 {
-    USART1_sendData_u8(I2C_ReadByte(MPU6050_Addr,WHO_AM_I));
+	u8 data = 0;
+	I2C_ReadByte(MPU6050_Addr, WHO_AM_I, &data);
 }
 
 
@@ -83,22 +84,21 @@ void MPU6050_WHO_AM_I(void)
 void READ_MPU6050_Accel(void)
 {
 
-	MPU6050_Accel_X = I2C_Read_16(MPU6050_Addr,ACCEL_XOUT_H);
+	I2C_ReadBytes_BE(MPU6050_Addr, ACCEL_XOUT_H, sizeof(MPU6050_Accel_X), (uint8_t *)&MPU6050_Accel_X);
 	if( (int32_t)MPU6050_Accel_X + Accel_offset_X <= 32768  &&  (int32_t)MPU6050_Accel_X + Accel_offset_X >= -32768)
 	{
 		MPU6050_Accel_X = MPU6050_Accel_X + Accel_offset_X;
 	}
 	stQuadrotor_State.s16_Accel_X = MPU6050_Accel_X;
 
-	MPU6050_Accel_Y = I2C_Read_16(MPU6050_Addr,ACCEL_YOUT_H);// + Accel_offset_Y;
+	I2C_ReadBytes_BE(MPU6050_Addr, ACCEL_YOUT_H, sizeof(MPU6050_Accel_Y), (uint8_t *)&MPU6050_Accel_Y);
 	if( (int32_t)MPU6050_Accel_Y + Accel_offset_Y <= 32768  &&  (int32_t)MPU6050_Accel_Y + Accel_offset_Y >= -32768)
 	{
 		MPU6050_Accel_Y = MPU6050_Accel_Y + Accel_offset_Y;
 	}
 	stQuadrotor_State.s16_Accel_Y = MPU6050_Accel_Y;
 
-
-	MPU6050_Accel_Z = I2C_Read_16(MPU6050_Addr,ACCEL_ZOUT_H);// + Accel_offset_Z;
+	I2C_ReadBytes_BE(MPU6050_Addr, ACCEL_ZOUT_H, sizeof(MPU6050_Accel_Z), (uint8_t *)&MPU6050_Accel_Z);
 	if( (int32_t)MPU6050_Accel_Z + Accel_offset_Z <= 32768  &&  (int32_t)MPU6050_Accel_Z + Accel_offset_Z >= -32768)
 	{
 		MPU6050_Accel_Z = MPU6050_Accel_Z + Accel_offset_Z;
@@ -118,23 +118,21 @@ void READ_MPU6050_Accel(void)
 
 void READ_MPU6050_Gyro(void)
 {
-	MPU6050_Gyro_X = I2C_Read_16(MPU6050_Addr,GYRO_XOUT_H);// + Gyro_offset_X;
+	I2C_ReadBytes_BE(MPU6050_Addr, GYRO_XOUT_H, sizeof(MPU6050_Gyro_X), (uint8_t *)&MPU6050_Gyro_X);
 	if( (int32_t)MPU6050_Gyro_X + Gyro_offset_X <= 32768  &&  (int32_t)MPU6050_Gyro_X + Gyro_offset_X >= -32768)
 	{
 		MPU6050_Gyro_X = MPU6050_Gyro_X + Gyro_offset_X;
 	}
 	stQuadrotor_State.s16_Gyro_X = MPU6050_Gyro_X;
 
-
-    MPU6050_Gyro_Y = I2C_Read_16(MPU6050_Addr,GYRO_YOUT_H);// + Gyro_offset_Y;
+	I2C_ReadBytes_BE(MPU6050_Addr, GYRO_YOUT_H, sizeof(MPU6050_Gyro_Y), (uint8_t *)&MPU6050_Gyro_Y);
 	if( (int32_t)MPU6050_Gyro_Y + Gyro_offset_Y <= 32768  &&  (int32_t)MPU6050_Gyro_Y + Gyro_offset_Y >= -32768)
 	{
 		MPU6050_Gyro_Y = MPU6050_Gyro_Y + Gyro_offset_Y;
 	}
 	stQuadrotor_State.s16_Gyro_Y = MPU6050_Gyro_Y;
 
-
-	MPU6050_Gyro_Z = I2C_Read_16(MPU6050_Addr,GYRO_ZOUT_H);// + Gyro_offset_Z;
+	I2C_ReadBytes_BE(MPU6050_Addr, GYRO_ZOUT_H, sizeof(MPU6050_Gyro_Z), (uint8_t *)&MPU6050_Gyro_Z);
 	if( (int32_t)MPU6050_Gyro_Z + Gyro_offset_Z <= 32768  &&  (int32_t)MPU6050_Gyro_Z + Gyro_offset_Z >= -32768)
 	{
 		MPU6050_Gyro_Z = MPU6050_Gyro_Z + Gyro_offset_Z;
@@ -153,23 +151,29 @@ void READ_MPU6050_Gyro(void)
 
 void MPU6050_SetOffset(void)
 {
-	 int32_t text_Ax = 0,text_Ay = 0,text_Az = 0;
-	 int32_t text_Gx = 0,text_Gy = 0,text_Gz = 0;
-	 u16 i;
-	 for(i = 0;i < 200;i++)
-	 {//强制转换成short int类型，如果是负数，再转成32位时会自动补上符号
-	 	text_Ax += (short int)( I2C_Read_16(MPU6050_Addr,ACCEL_XOUT_H) );
+	int16_t data;
+	int32_t text_Ax = 0, text_Ay = 0, text_Az = 0;
+	int32_t text_Gx = 0, text_Gy = 0, text_Gz = 0;
+	u16 i;
+	for (i = 0; i < 200; i++)
+	{ //强制转换成short int类型，如果是负数，再转成32位时会自动补上符号
+		I2C_ReadBytes_BE(MPU6050_Addr, ACCEL_XOUT_H, sizeof(data), (uint8_t *)&data);
+		text_Ax += (short int)data;
 		//delay_ms(1);
-		text_Ay += (short int)( I2C_Read_16(MPU6050_Addr,ACCEL_YOUT_H) );
+		I2C_ReadBytes_BE(MPU6050_Addr, ACCEL_YOUT_H, sizeof(data), (uint8_t *)&data);
+		text_Ay += (short int)data;
 		//delay_ms(1);
-		text_Az += (short int)( I2C_Read_16(MPU6050_Addr,ACCEL_ZOUT_H) - 16384 );
+		I2C_ReadBytes_BE(MPU6050_Addr, ACCEL_ZOUT_H, sizeof(data), (uint8_t *)&data);
+		text_Az += (short int)(data - 16384);
 		//delay_ms(1);
-
-		text_Gx += (short int)( I2C_Read_16(MPU6050_Addr,GYRO_XOUT_H) );
+		I2C_ReadBytes_BE(MPU6050_Addr, GYRO_XOUT_H, sizeof(data), (uint8_t *)&data);
+		text_Gx += (short int)data;
 		//delay_ms(1);
-		text_Gy += (short int)( I2C_Read_16(MPU6050_Addr,GYRO_YOUT_H) );
+		I2C_ReadBytes_BE(MPU6050_Addr, GYRO_YOUT_H, sizeof(data), (uint8_t *)&data);
+		text_Gy += (short int)data;
 		//delay_ms(1);
-		text_Gz += (short int)( I2C_Read_16(MPU6050_Addr,GYRO_ZOUT_H) );
+		I2C_ReadBytes_BE(MPU6050_Addr, GYRO_ZOUT_H, sizeof(data), (uint8_t *)&data);
+		text_Gz += (short int)data;
 		//delay_ms(1);
 	 }
 	 Accel_offset_X = -(text_Ax / 200);
@@ -199,8 +203,9 @@ void MPU6050_SetOffset(void)
 }
 
 void READ_MPU6050_TEMP(void)
-{	
-	MPU6050_Temperature = I2C_Read_16( MPU6050_Addr,TEMP_OUT_H ); // I2C_Read_16( MPU6050_Addr,TEMP_OUT_H ) / 340.0 + 36.53
+{
+	I2C_ReadBytes_BE(MPU6050_Addr, TEMP_OUT_H, sizeof(MPU6050_Temperature), (uint8_t *)&MPU6050_Temperature);
+	//MPU6050_Temperature = MPU6050_Temperature / 340.0 + 36.53
 	stQuadrotor_State.s16_MPU6050_Temp = MPU6050_Temperature;		   //温度暂时没用，计算温度暂时交给上位机
 	stQuadrotor_State_DMA_BUFF = stQuadrotor_State;
 }

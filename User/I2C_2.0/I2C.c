@@ -35,8 +35,8 @@ void I2C_Stop(void)
 
 
 
-/*****************等待应答信号，返回1即收到应答，0即没有收到************/ 
-u8 I2C_Wait_Ack(void)
+/*****************等待应答信号，返回0即收到应答，-1即没有收到************/ 
+s8 I2C_Wait_Ack(void)
 {
 	u8 WaitTime=0;
 	SDA_IN();                      //SDA设置为输入  
@@ -51,13 +51,13 @@ u8 I2C_Wait_Ack(void)
 			I2C_SCL=0;                     //时钟输出0
 			SDA_OUT();   //改为输出之前I2C_SCL记得变为低电平，否则会发出开始或者结束信号
 			I2C_Stop();
-			return 0;
+			return -1;
 		}
 		// delay_us(1);
 	}
 	I2C_SCL=0;                     //时钟输出0 	
 	SDA_OUT();    //改为输出之前I2C_SCL记得变为低电平，否则会发出开始或者结束信号
-	return 1;  
+	return 0;  
 }
  
 /********************产生ACK应答*****************/
@@ -84,7 +84,7 @@ void I2C_NAck(void)		//非应答信号位SCL为高电平时，SDA为高电平
 				 				     
 /*****************************I2C发送一个字节数据***************************/
 //返回1,从机有应答;0，无应答		  
-u8 I2C_Send_Data(u8 data)
+s8 I2C_Send_Data(u8 data)
 {                        
     u8 i;   	    
     I2C_SCL=0;                       //拉低时钟开始数据传输
@@ -135,27 +135,28 @@ u8 I2C_Read_Data(u8 ack)
 
 /**************************I2C组合操作************************************/
 
-
-void I2C_SendMode(u8 device_address,u8 address)
+s8 I2C_SendMode(u8 device_address, u8 address)
 {
-	I2C_Start();  
-	I2C_Send_Data(device_address);   		//发送器件地址,写入模式 	 
-	I2C_Send_Data(address);     		        //发送操作地址							   
-	
+	s8 ret = 0;
+	I2C_Start();
+	ret |= I2C_Send_Data(device_address);		//发送器件地址,写入模式
+	ret |= I2C_Send_Data(address);				//发送操作地址
+	return ret;
 }
 
 
 
 
-void I2C_ReadMode(u8 device_address,u8 address)
+s8 I2C_ReadMode(u8 device_address,u8 address)
 {
-	I2C_Start();  
-	I2C_Send_Data(device_address);   		//发送器件地址,写入模式 	 
-	I2C_Send_Data(address);     		        //发送操作地址							   
+	s8 ret = 0;
+	I2C_Start();
+	ret |= I2C_Send_Data(device_address);		//发送器件地址,写入模式
+	ret |= I2C_Send_Data(address);				//发送操作地址
 
-	I2C_Start();  	 	                   //重启总线 
-	I2C_Send_Data(device_address + 1);   	//发送器件地址,读数据模式		    
-	
+	I2C_Start();  	 	                   //重启总线
+	ret |= I2C_Send_Data(device_address + 1); //发送器件地址,读数据模式
+	return ret;
 }
 
 
@@ -168,64 +169,70 @@ void I2C_ReadMode(u8 device_address,u8 address)
 /*************************I2C完整操作，直接读写************************************/
 
 //向某个地址发送一个字节
-void I2C_SendByte(u8 device_address,u8 address,u8 data)	  //设备地址需要预留最后一位读写状态位
+s8 I2C_SendByte(u8 device_address,u8 address,u8 data)	  //设备地址需要预留最后一位读写状态位
 {
-	I2C_Start();  
-	I2C_Send_Data(device_address);   		//发送器件地址,写入模式 	 
-	I2C_Send_Data(address);     		        //发送操作地址							      	 										  		   
-	I2C_Send_Data(data);     		        //发送数据							     		    	   
-    I2C_Stop();
-	//delay_ms(10); 
+	s8 ret = 0;
+	I2C_Start();
+	ret |= I2C_Send_Data(device_address);		//发送器件地址,写入模式
+	ret |= I2C_Send_Data(address);				//发送操作地址
+	ret |= I2C_Send_Data(data);					//发送数据
+	I2C_Stop();
+	//delay_ms(10);
+	return ret;
 }
 
 //不指定发送的地址，发送一个字节数据
-void I2C_SendByte_NoAddr(u8 device_address,u8 data)	  //设备地址需要预留最后一位读写状态位
+s8 I2C_SendByte_NoAddr(u8 device_address,u8 data)	  //设备地址需要预留最后一位读写状态位
 {
-	I2C_Start();  
-	I2C_Send_Data(device_address);   		//发送器件地址,写入模式 	   	 										  		   
-	I2C_Send_Data(data);     		        //发送数据							   		    	   
-    I2C_Stop();
-	//delay_ms(10); 
+	s8 ret = 0;
+	I2C_Start();
+	ret |= I2C_Send_Data(device_address);   //发送器件地址,写入模式
+	ret |= I2C_Send_Data(data);				//发送数据
+	I2C_Stop();
+	//delay_ms(10);
+	return ret;
 }
 
 //向某个地址发送多个字节
-u8 I2C_SendBytes(u8 device_address,u8 address, uint8_t len, uint8_t *data)
+s8 I2C_SendBytes(u8 device_address,u8 address, uint8_t len, uint8_t *data)
 {
+	s8 ret = 0;
 	int i;
     I2C_Start();
-    I2C_Send_Data(device_address);
-    I2C_Send_Data(address);
+	ret |= I2C_Send_Data(device_address);
+	ret |= I2C_Send_Data(address);
 	for (i = 0; i < len; i++) 
 	{
-        I2C_Send_Data(data[i]);
-    }
+		ret |= I2C_Send_Data(data[i]);
+	}
     I2C_Stop();
-    return 0;
+    return ret;
 }
 //向某个地址读取一个字节
-u8 I2C_ReadByte(u8 device_address,u8 address)	  //设备地址需要预留最后一位读写状态位
+s8 I2C_ReadByte(u8 device_address, u8 address, u8 *data) //设备地址需要预留最后一位读写状态位
 {
-	u8 data=0;		  	    																 
-    I2C_Start();                           //发送开始命令 
-	
-	I2C_Send_Data(device_address);  		//发送器件地址,写数据 	                        //等待从机应答 
-    I2C_Send_Data(address);                //发送操作地址	            
-	 
-	I2C_Start();  	 	                   //重启总线 
-	I2C_Send_Data(device_address + 1);   	//发送器件地址,读数据模式		   	  
-    data = I2C_Read_Data(NACK);		   		   //接收数据，无应答 
-    I2C_Stop();                            //发送停止信号	    
-	return data;
+	s8 ret = 0;
+	I2C_Start();                           //发送开始命令
+
+	ret |= I2C_Send_Data(device_address);  //发送器件地址,写数据 	                        //等待从机应答
+	ret |= I2C_Send_Data(address);		   //发送操作地址
+
+	I2C_Start();  	 	                   //重启总线
+	ret |= I2C_Send_Data(device_address + 1); //发送器件地址,读数据模式
+	*data = I2C_Read_Data(NACK);			//接收数据，无应答
+	I2C_Stop();                            //发送停止信号	    
+	return ret;
 }
 
-//向某个地址读取多个字节
-u8 I2C_ReadBytes(u8 device_address, u8 address, uint8_t len, uint8_t *buf)
+//向某个地址读取多个字节(以小端顺序读取、存储，即先读到的数据存在低地址，即数据低位，但传感器一般是先发送高位的，因此用大端较多)
+s8 I2C_ReadBytes_LE(u8 device_address, u8 address, uint8_t len, uint8_t *buf)
 {
-    I2C_Start();
-    I2C_Send_Data(device_address);
-    I2C_Send_Data(address);
-    I2C_Start();
-	I2C_Send_Data(device_address + 1);
+	s8 ret = 0;
+	I2C_Start();
+	ret |= I2C_Send_Data(device_address);
+	ret |= I2C_Send_Data(address);
+	I2C_Start();
+	ret |= I2C_Send_Data(device_address + 1);
 	while (len) 
 	{
         if (len == 1)
@@ -236,51 +243,30 @@ u8 I2C_ReadBytes(u8 device_address, u8 address, uint8_t len, uint8_t *buf)
         len--;
     }
     I2C_Stop();
-    return 0;
+	return ret;
 }
 
-//对设备连续读取，设备应该会自动将操作地址递增
-u16 I2C_Read_16(u8 device_address,u8 address)	  //设备地址需要预留最后一位读写状态位
+//向某个地址读取多个字节（传感器很多数据先读到的都是高字节的，即以大端的顺序得到数据，而STM32一般是小端，低字节在前，因此存放顺序应该相反）
+s8 I2C_ReadBytes_BE(u8 device_address, u8 address, uint8_t len, uint8_t *buf)
 {
-	u16 data=0;		  	    																 
-    I2C_Start();                           //发送开始命令 
-	
-	I2C_Send_Data(device_address);  		//发送器件地址,写数据 	                     
-    I2C_Send_Data(address);                //发送操作地址           
-	 
-	I2C_Start();  	 	                   //重启总线 
-	I2C_Send_Data(device_address + 1);   	//发送器件地址,读数据		   	
-  
-    data = I2C_Read_Data(ACK);		   		   //接收数据，应答
-	data <<= 8;		   
-	data |= I2C_Read_Data(NACK);
-
-    I2C_Stop();                            //发送停止信号	    
-	return data;
+	s8 ret = 0;
+	I2C_Start();
+	ret |= I2C_Send_Data(device_address);
+	ret |= I2C_Send_Data(address);
+	I2C_Start();
+	ret |= I2C_Send_Data(device_address + 1);
+	buf += len;
+	while (len--)
+	{
+		if (len)
+			*(--buf) = I2C_Read_Data(ACK);
+		else
+			*(--buf) = I2C_Read_Data(NACK);
+	}
+	I2C_Stop();
+	return ret;
 }
 
-u32 I2C_Read_32(u8 device_address,u8 address)	  //设备地址需要预留最后一位读写状态位
-{
-	u32 data=0;		  	    																 
-    I2C_Start();                           //发送开始命令 
-	
-	I2C_Send_Data(device_address);  		//发送器件地址,写数据 	              
-    I2C_Send_Data(address);                //发送操作地址           
-	 
-	I2C_Start();  	 	                   //重启总线 
-	I2C_Send_Data(device_address + 1);   	//发送器件地址,读数据		   
-  
-	data = I2C_Read_Data(ACK);		   		   //接收数据，应答
-	data <<= 8;	
-    data |= I2C_Read_Data(ACK);		   		   //接收数据，应答
-	data <<= 8;	
-	data |= I2C_Read_Data(ACK);		   //接收数据，应答
-	data <<= 8; 	   
-	data |= I2C_Read_Data(NACK);
-
-    I2C_Stop();                            //发送停止信号	    
-	return data;
-}
 
 
 
@@ -306,16 +292,20 @@ mask先用0xFF << (bitStart + 1)，得到一个目标位左边全是1的数11100000
 再右移动(7 - bitStart) = 00011000
 用mask清零再用data赋值得到目标数
 *******************************************************************************/ 
-void I2C_WriteBits(u8 device_address,u8 address,u8 bitStart,u8 length,u8 data)
+s8 I2C_WriteBits(u8 device_address,u8 address,u8 bitStart,u8 length,u8 data)
 {
-	u8 read_data = I2C_ReadByte(device_address, address);
+	s8 ret = 0;
+	u8 mask = 0;
+	u8 read_data = 0;
+	ret |= I2C_ReadByte(device_address, address, &read_data);
 	//要写入的几个位mask都为1
-	u8 mask = (0xFF << (bitStart + 1)) | 0xFF >> (7 - bitStart + length);
+	mask = (0xFF << (bitStart + 1)) | 0xFF >> (7 - bitStart + length);
 	data <<= (8 - length);
 	data >>= (7 - bitStart);
 	read_data &= mask;	//将待写的几个位清零
 	read_data |= data;
-	I2C_SendByte(device_address, address, read_data);
+	ret |= I2C_SendByte(device_address, address, read_data);
+	return ret;
 }
 
 /**************************实现函数********************************************
@@ -327,9 +317,12 @@ void I2C_WriteBits(u8 device_address,u8 address,u8 bitStart,u8 length,u8 data)
 		data  为0 时，目标位将被清0 否则将被置位
 返回   void
 *******************************************************************************/ 
-void I2C_WriteBit(u8 device_address, u8 address, u8 bitNum, u8 data)
+s8 I2C_WriteBit(u8 device_address, u8 address, u8 bitNum, u8 data)
 {
-    u8 read_data = I2C_ReadByte(device_address, address);
-    read_data = (data != 0) ? (read_data | (1 << bitNum)) : (read_data & ~(1 << bitNum));
-    I2C_SendByte(device_address, address, read_data);
+	s8 ret = 0;
+	u8 read_data = 0;
+	ret |= I2C_ReadByte(device_address, address, &read_data);
+	read_data = (data != 0) ? (read_data | (1 << bitNum)) : (read_data & ~(1 << bitNum));
+	ret |= I2C_SendByte(device_address, address, read_data);
+	return ret;
 }

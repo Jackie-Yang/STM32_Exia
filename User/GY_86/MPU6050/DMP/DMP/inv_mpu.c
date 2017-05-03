@@ -43,7 +43,7 @@
 #include "msp430_interrupt.h" */
 
 #define i2c_write   I2C_SendBytes
-#define i2c_read    I2C_ReadBytes
+#define i2c_read    I2C_ReadBytes_LE
 #define delay_ms    delay_ms
 #define get_ms      myget_ms
 
