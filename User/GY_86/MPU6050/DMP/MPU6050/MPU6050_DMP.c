@@ -43,20 +43,17 @@ static  unsigned short inv_row_2_scale(const signed char *row)
     else if (row[2] < 0)
         b = 6;
     else
-        b = 7;      // error
+        b = 7; // error
     return b;
 }
 
 
-static  unsigned short inv_orientation_matrix_to_scalar(
-    const signed char *mtx)
+static  unsigned short inv_orientation_matrix_to_scalar(const signed char *mtx)
 {
     unsigned short scalar;
     scalar = inv_row_2_scale(mtx);
     scalar |= inv_row_2_scale(mtx + 3) << 3;
     scalar |= inv_row_2_scale(mtx + 6) << 6;
-
-
     return scalar;
 }
 
@@ -66,7 +63,8 @@ static void run_self_test(void)
     long gyro[3], accel[3];
 
     result = mpu_run_self_test(gyro, accel);
-    if (result == 0x7) {
+    if (result == 0x7)
+    {
         /* Test passed. We can trust the gyro data here, so let's push it down
          * to the DMP.
          */
@@ -82,76 +80,12 @@ static void run_self_test(void)
         accel[1] *= accel_sens;
         accel[2] *= accel_sens;
         dmp_set_accel_bias(accel);
-		// printf("setting bias succesfully ......\r\n");
+        // printf("setting bias succesfully ......\r\n");
     }
 }
 
 
 
-int16_t  MPU6050_FIFO[6][11];
-int16_t Gx_offset=0,Gy_offset=0,Gz_offset=0;
-
-
-/**************************实现函数********************************************
-*函数原型:		void  MPU6050_newValues(int16_t ax,int16_t ay,int16_t az,int16_t gx,int16_t gy,int16_t gz)
-*功　　能:	    将新的ADC数据更新到 FIFO数组，进行滤波处理
-*******************************************************************************/
-
-void  MPU6050_newValues(int16_t ax,int16_t ay,int16_t az,int16_t gx,int16_t gy,int16_t gz)
-{
-unsigned char i ;
-int32_t sum=0;
-for(i=1;i<10;i++){	//FIFO 操作
-MPU6050_FIFO[0][i-1]=MPU6050_FIFO[0][i];
-MPU6050_FIFO[1][i-1]=MPU6050_FIFO[1][i];
-MPU6050_FIFO[2][i-1]=MPU6050_FIFO[2][i];
-MPU6050_FIFO[3][i-1]=MPU6050_FIFO[3][i];
-MPU6050_FIFO[4][i-1]=MPU6050_FIFO[4][i];
-MPU6050_FIFO[5][i-1]=MPU6050_FIFO[5][i];
-}
-MPU6050_FIFO[0][9]=ax;//将新的数据放置到 数据的最后面
-MPU6050_FIFO[1][9]=ay;
-MPU6050_FIFO[2][9]=az;
-MPU6050_FIFO[3][9]=gx;
-MPU6050_FIFO[4][9]=gy;
-MPU6050_FIFO[5][9]=gz;
-
-sum=0;
-for(i=0;i<10;i++){	//求当前数组的合，再取平均值
-   sum+=MPU6050_FIFO[0][i];
-}
-MPU6050_FIFO[0][10]=sum/10;
-
-sum=0;
-for(i=0;i<10;i++){
-   sum+=MPU6050_FIFO[1][i];
-}
-MPU6050_FIFO[1][10]=sum/10;
-
-sum=0;
-for(i=0;i<10;i++){
-   sum+=MPU6050_FIFO[2][i];
-}
-MPU6050_FIFO[2][10]=sum/10;
-
-sum=0;
-for(i=0;i<10;i++){
-   sum+=MPU6050_FIFO[3][i];
-}
-MPU6050_FIFO[3][10]=sum/10;
-
-sum=0;
-for(i=0;i<10;i++){
-   sum+=MPU6050_FIFO[4][i];
-}
-MPU6050_FIFO[4][10]=sum/10;
-
-sum=0;
-for(i=0;i<10;i++){
-   sum+=MPU6050_FIFO[5][i];
-}
-MPU6050_FIFO[5][10]=sum/10;
-}
 
 /**************************实现函数********************************************
 *函数原型:		void MPU6050_setClockSource(uint8_t source)
@@ -167,7 +101,8 @@ MPU6050_FIFO[5][10]=sum/10;
  * 6       | Reserved
  * 7       | Stops the clock and keeps the timing generator in reset
 *******************************************************************************/
-void MPU6050_setClockSource(uint8_t source){
+void MPU6050_setClockSource(uint8_t source)
+{
     I2C_WriteBits(MPU6050_Addr, MPU6050_RA_PWR_MGMT_1, MPU6050_PWR1_CLKSEL_BIT, MPU6050_PWR1_CLKSEL_LENGTH, source);
 
 }
@@ -180,7 +115,8 @@ void MPU6050_setClockSource(uint8_t source){
  * @see MPU6050_GCONFIG_FS_SEL_BIT
  * @see MPU6050_GCONFIG_FS_SEL_LENGTH
  */
-void MPU6050_setFullScaleGyroRange(uint8_t range) {
+void MPU6050_setFullScaleGyroRange(uint8_t range) 
+{
     I2C_WriteBits(MPU6050_Addr, MPU6050_RA_GYRO_CONFIG, MPU6050_GCONFIG_FS_SEL_BIT, MPU6050_GCONFIG_FS_SEL_LENGTH, range);
 }
 
@@ -188,7 +124,8 @@ void MPU6050_setFullScaleGyroRange(uint8_t range) {
 *函数原型:		void MPU6050_setFullScaleAccelRange(uint8_t range)
 *功　　能:	    设置  MPU6050 加速度计的最大量程
 *******************************************************************************/
-void MPU6050_setFullScaleAccelRange(uint8_t range) {
+void MPU6050_setFullScaleAccelRange(uint8_t range) 
+{
     I2C_WriteBits(MPU6050_Addr, MPU6050_RA_ACCEL_CONFIG, MPU6050_ACONFIG_AFS_SEL_BIT, MPU6050_ACONFIG_AFS_SEL_LENGTH, range);
 }
 
@@ -198,7 +135,8 @@ void MPU6050_setFullScaleAccelRange(uint8_t range) {
 				enabled =1   睡觉
 			    enabled =0   工作
 *******************************************************************************/
-void MPU6050_setSleepEnabled(uint8_t enabled) {
+void MPU6050_setSleepEnabled(uint8_t enabled) 
+{
     I2C_WriteBit(MPU6050_Addr, MPU6050_RA_PWR_MGMT_1, MPU6050_PWR1_SLEEP_BIT, enabled);
 }
 
@@ -215,7 +153,8 @@ uint8_t MPU6050_getDeviceID(void)
 *函数原型:		uint8_t MPU6050_testConnection(void)
 *功　　能:	    检测MPU6050 是否已经连接
 *******************************************************************************/
-uint8_t MPU6050_testConnection(void) {
+uint8_t MPU6050_testConnection(void) 
+{
    if(MPU6050_getDeviceID() == 0x68)  //0b01101000;
    return 1;
    	else return 0;
@@ -225,7 +164,8 @@ uint8_t MPU6050_testConnection(void) {
 *函数原型:		void MPU6050_setI2CMasterModeEnabled(uint8_t enabled)
 *功　　能:	    设置 MPU6050 是否为AUX I2C线的主机
 *******************************************************************************/
-void MPU6050_setI2CMasterModeEnabled(uint8_t enabled) {
+void MPU6050_setI2CMasterModeEnabled(uint8_t enabled) 
+{
     I2C_WriteBit(MPU6050_Addr, MPU6050_RA_USER_CTRL, MPU6050_USERCTRL_I2C_MST_EN_BIT, enabled);
 }
 
@@ -233,7 +173,8 @@ void MPU6050_setI2CMasterModeEnabled(uint8_t enabled) {
 *函数原型:		void MPU6050_setI2CBypassEnabled(uint8_t enabled)
 *功　　能:	    设置 MPU6050 是否为AUX I2C线的主机
 *******************************************************************************/
-void MPU6050_setI2CBypassEnabled(uint8_t enabled) {
+void MPU6050_setI2CBypassEnabled(uint8_t enabled) 
+{
     I2C_WriteBit(MPU6050_Addr, MPU6050_RA_INT_PIN_CFG, MPU6050_INTCFG_I2C_BYPASS_EN_BIT, enabled);
 }
 
@@ -241,7 +182,8 @@ void MPU6050_setI2CBypassEnabled(uint8_t enabled) {
 *函数原型:		void MPU6050_initialize(void)
 *功　　能:	    初始化 	MPU6050 以进入可用状态。
 *******************************************************************************/
-void MPU6050_initialize(void) {
+void MPU6050_initialize(void) 
+{
     MPU6050_setClockSource(MPU6050_CLOCK_INTERNAL); //设置时钟，内置时钟源 (默认)
     MPU6050_setFullScaleGyroRange(MPU6050_GYRO_FS_2000);//陀螺仪最大量程 +-1000度每秒
     MPU6050_setFullScaleAccelRange(MPU6050_ACCEL_FS_2);	//加速度度最大量程 +-2G
@@ -259,46 +201,46 @@ void MPU6050_initialize(void) {
 返回  值：无
 **************************************************************************/
 void DMP_Init(void)
-{ 
-	if(I2C_ReadByte(MPU6050_Addr,0x75) != 0x68)
+{
+    if (I2C_ReadByte(MPU6050_Addr, 0x75) != 0x68)
     {
         NVIC_SystemReset();
     }
     //  printf("mpu_set_sensor complete ......\r\n");
-	if(!mpu_init())
-  {
-	  if(!mpu_set_sensors(INV_XYZ_GYRO | INV_XYZ_ACCEL))
-      {
-        //  printf("mpu_set_sensor complete ......\r\n");
-      }
-	  if(!mpu_configure_fifo(INV_XYZ_GYRO | INV_XYZ_ACCEL))
-	  	{
-              //  printf("mpu_configure_fifo complete ......\r\n");
-              }
-	  if(!mpu_set_sample_rate(DEFAULT_MPU_HZ))
-	  	{
-              //  printf("mpu_set_sample_rate complete ......\r\n");
-              }
-	  if(!dmp_load_motion_driver_firmware())
-	  	{
-              // printf("dmp_load_motion_driver_firmware complete ......\r\n");
-          }
-	  if(!dmp_set_orientation(inv_orientation_matrix_to_scalar(gyro_orientation)))
-	  	{//  printf("dmp_set_orientation complete ......\r\n");
-          }
-	  if(!dmp_enable_feature(DMP_FEATURE_6X_LP_QUAT | DMP_FEATURE_TAP |
-	        DMP_FEATURE_ANDROID_ORIENT | DMP_FEATURE_SEND_RAW_ACCEL | DMP_FEATURE_SEND_CAL_GYRO |
-	        DMP_FEATURE_GYRO_CAL))
-	  	{//  printf("dmp_enable_feature complete ......\r\n");
-          }
-	  if(!dmp_set_fifo_rate(DEFAULT_MPU_HZ))
-	  	{//  printf("dmp_set_fifo_rate complete ......\r\n");
-          }
-	  run_self_test();
-	  if(!mpu_set_dmp_state(1))
-	  	{//  printf("mpu_set_dmp_state complete ......\r\n");
-          }
-  }
+    if (!mpu_init())
+    {
+        if (!mpu_set_sensors(INV_XYZ_GYRO | INV_XYZ_ACCEL))
+        {
+            //  printf("mpu_set_sensor complete ......\r\n");
+        }
+        if (!mpu_configure_fifo(INV_XYZ_GYRO | INV_XYZ_ACCEL))
+        {
+            //  printf("mpu_configure_fifo complete ......\r\n");
+        }
+        if (!mpu_set_sample_rate(DEFAULT_MPU_HZ))
+        {
+            //  printf("mpu_set_sample_rate complete ......\r\n");
+        }
+        if (!dmp_load_motion_driver_firmware())
+        {
+            // printf("dmp_load_motion_driver_firmware complete ......\r\n");
+        }
+        if (!dmp_set_orientation(inv_orientation_matrix_to_scalar(gyro_orientation)))
+        { //  printf("dmp_set_orientation complete ......\r\n");
+        }
+        if (!dmp_enable_feature(DMP_FEATURE_6X_LP_QUAT | DMP_FEATURE_TAP |
+                                DMP_FEATURE_ANDROID_ORIENT | DMP_FEATURE_SEND_RAW_ACCEL | DMP_FEATURE_SEND_CAL_GYRO |
+                                DMP_FEATURE_GYRO_CAL))
+        { //  printf("dmp_enable_feature complete ......\r\n");
+        }
+        if (!dmp_set_fifo_rate(DEFAULT_MPU_HZ))
+        { //  printf("dmp_set_fifo_rate complete ......\r\n");
+        }
+        run_self_test();
+        if (!mpu_set_dmp_state(1))
+        { //  printf("mpu_set_dmp_state complete ......\r\n");
+        }
+    }
 }
 /**************************************************************************
 函数功能：读取MPU6050内置DMP的姿态信息
@@ -306,42 +248,41 @@ void DMP_Init(void)
 返回  值：无
 **************************************************************************/
 void Read_DMP(void)
-{	
-	  unsigned long sensor_timestamp;
-		unsigned char more;
-		long quat[4];
+{
+    unsigned long sensor_timestamp;
+    unsigned char more;
+    long quat[4];
 
-				dmp_read_fifo(gyro, accel, quat, &sensor_timestamp, &sensors, &more);		
-				if (sensors & INV_WXYZ_QUAT )
-				{    
-					 dmp_q0=quat[0] / q30;
-					 dmp_q1=quat[1] / q30;
-					 dmp_q2=quat[2] / q30;
-					 dmp_q3=quat[3] / q30;
-                     stQuadrotor_State.Accel_X = accel[0];
-                     stQuadrotor_State.Accel_Y = accel[1];
-                     stQuadrotor_State.Accel_Z = accel[2];
+    dmp_read_fifo(gyro, accel, quat, &sensor_timestamp, &sensors, &more);
+    if (sensors & INV_WXYZ_QUAT)
+    {
+        dmp_q0 = quat[0] / q30;
+        dmp_q1 = quat[1] / q30;
+        dmp_q2 = quat[2] / q30;
+        dmp_q3 = quat[3] / q30;
+        stQuadrotor_State.s16_Accel_X = accel[0];
+        stQuadrotor_State.s16_Accel_Y = accel[1];
+        stQuadrotor_State.s16_Accel_Z = accel[2];
 
-                     stQuadrotor_State.Gyro_X = -gyro[0];
-                     stQuadrotor_State.Gyro_Y = -gyro[1];
-                     stQuadrotor_State.Gyro_Z = gyro[2];
+        stQuadrotor_State.s16_Gyro_X = -gyro[0];
+        stQuadrotor_State.s16_Gyro_Y = -gyro[1];
+        stQuadrotor_State.s16_Gyro_Z = gyro[2];
 
-                     Pitch.Gyro_cur = (float)stQuadrotor_State.Gyro_X / 16.4;
-	                 Roll.Gyro_cur = (float)stQuadrotor_State.Gyro_Y / 16.4;
-	                 Yaw.Gyro_cur = (float)stQuadrotor_State.Gyro_Z / 16.4;
-                     
-                     stQuadrotor_State.Roll = -asin(-2 * dmp_q1 * dmp_q3 + 2 * dmp_q0* dmp_q2)* 57.3; 
-                     stQuadrotor_State.Pitch = -atan2(2 * dmp_q2 * dmp_q3 + 2 * dmp_q0 * dmp_q1, -2 * dmp_q1 * dmp_q1 - 2 * dmp_q2* dmp_q2 + 1)* 57.3; // roll
-		             stQuadrotor_State.Yaw = atan2(2*(dmp_q1*dmp_q2 + dmp_q0*dmp_q3),dmp_q0*dmp_q0+dmp_q1*dmp_q1-dmp_q2*dmp_q2-dmp_q3*dmp_q3) * 57.3;
-                     Yaw.angle_cur = stQuadrotor_State.Yaw;
-                     Pitch.angle_cur = stQuadrotor_State.Pitch;
-                     Roll.angle_cur = stQuadrotor_State.Roll;
-                     stQuadrotor_State_DMA_BUFF = stQuadrotor_State;
-					//  Dmp_Pitch = asin(-2 * dmp_q1 * dmp_q3 + 2 * dmp_q0* dmp_q2)* 57.3; 
-                    //  Dmp_Roll = atan2(2 * dmp_q2 * dmp_q3 + 2 * dmp_q0 * dmp_q1, -2 * dmp_q1 * dmp_q1 - 2 * dmp_q2* dmp_q2 + 1)* 57.3; // roll
-		            //  Dmp_Yaw = 	atan2(2*(dmp_q1*dmp_q2 + dmp_q0*dmp_q3),dmp_q0*dmp_q0+dmp_q1*dmp_q1-dmp_q2*dmp_q2-dmp_q3*dmp_q3) * 57.3;	
-				}
+        Pitch.Gyro_cur = (float)stQuadrotor_State.s16_Gyro_X / 16.4;
+        Roll.Gyro_cur = (float)stQuadrotor_State.s16_Gyro_Y / 16.4;
+        Yaw.Gyro_cur = (float)stQuadrotor_State.s16_Gyro_Z / 16.4;
 
+        stQuadrotor_State.f_Roll = -asin(-2 * dmp_q1 * dmp_q3 + 2 * dmp_q0 * dmp_q2) * 57.3;
+        stQuadrotor_State.f_Pitch = -atan2(2 * dmp_q2 * dmp_q3 + 2 * dmp_q0 * dmp_q1, -2 * dmp_q1 * dmp_q1 - 2 * dmp_q2 * dmp_q2 + 1) * 57.3; // roll
+        stQuadrotor_State.f_Yaw = atan2(2 * (dmp_q1 * dmp_q2 + dmp_q0 * dmp_q3), dmp_q0 * dmp_q0 + dmp_q1 * dmp_q1 - dmp_q2 * dmp_q2 - dmp_q3 * dmp_q3) * 57.3;
+        Yaw.angle_cur = stQuadrotor_State.f_Yaw;
+        Pitch.angle_cur = stQuadrotor_State.f_Pitch;
+        Roll.angle_cur = stQuadrotor_State.f_Roll;
+        stQuadrotor_State_DMA_BUFF = stQuadrotor_State;
+        //  Dmp_Pitch = asin(-2 * dmp_q1 * dmp_q3 + 2 * dmp_q0* dmp_q2)* 57.3;
+        //  Dmp_Roll = atan2(2 * dmp_q2 * dmp_q3 + 2 * dmp_q0 * dmp_q1, -2 * dmp_q1 * dmp_q1 - 2 * dmp_q2* dmp_q2 + 1)* 57.3; // roll
+        //  Dmp_Yaw = 	atan2(2*(dmp_q1*dmp_q2 + dmp_q0*dmp_q3),dmp_q0*dmp_q0+dmp_q1*dmp_q1-dmp_q2*dmp_q2-dmp_q3*dmp_q3) * 57.3;
+    }
 }
 /**************************************************************************
 函数功能：读取MPU6050内置温度传感器数据
@@ -349,11 +290,12 @@ void Read_DMP(void)
 返回  值：摄氏温度
 **************************************************************************/
 int Read_Temperature(void)
-{	   
-	  float Temp;
-	  Temp=(I2C_ReadByte(MPU6050_Addr,MPU6050_RA_TEMP_OUT_H)<<8)+I2C_ReadByte(MPU6050_Addr,MPU6050_RA_TEMP_OUT_L);
-		if(Temp>32768) Temp-=65536;
-		Temp=(36.53+Temp/340)*10;
-	  return (int)Temp;
+{
+    float Temp;
+    Temp = (I2C_ReadByte(MPU6050_Addr, MPU6050_RA_TEMP_OUT_H) << 8) + I2C_ReadByte(MPU6050_Addr, MPU6050_RA_TEMP_OUT_L);
+    if (Temp > 32768)
+        Temp -= 65536;
+    Temp = (36.53 + Temp / 340) * 10;
+    return (int)Temp;
 }
 //------------------End of File----------------------------

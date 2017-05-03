@@ -184,11 +184,11 @@ void MS5611_GetPressure(void)
 //	Last_Temperature = MS5611_Temperature;
 
 	MS5611_Temperature = Temperature;						//计算校正后温度,这个计算出来换算成实际温度要除以100
-	stQuadrotor_State.MS5611_Temp = MS5611_Temperature;		//存入上位机发送缓存
+	stQuadrotor_State.s32_MS5611_Temp = MS5611_Temperature;		//存入上位机发送缓存
 	OFF = OFF - OFF2;	 	//进行温度补偿
 	SENS = SENS - SENS2;
 	MS5611_Pressure=(D1_Pres/2097152.0*SENS-OFF)/32768.0;  //计算校正后气压，这个计算出来换算成实际气压要除以100(mbar),或者除以1000(kPa)
-	stQuadrotor_State.MS5611_Press = MS5611_Pressure;
+	stQuadrotor_State.s32_MS5611_Press = MS5611_Pressure;
 		
     if(Zero_Pressure == 0)
 	{	
@@ -203,7 +203,7 @@ void MS5611_GetPressure(void)
 		MS5611_high = 4433000.0 * (1 - pow((MS5611_Pressure / Zero_Pressure), 0.1903));
 	//	MS5611_high = 15384.62 * Zero_T * ( 1 - exp( 0.190259 * log10(MS5611_Pressure / Zero_Pressure)));	  //高度乘100
 		MS5611_high = high_filter(MS5611_high,high_buf);
-		stQuadrotor_State.MS5611_HIGH = (int32_t)MS5611_high;
+		stQuadrotor_State.s32_MS5611_HIGH = (int32_t)MS5611_high;
 		//High.high_cur = MS5611_high / 100.0f;
 	}
 	stQuadrotor_State_DMA_BUFF = stQuadrotor_State;

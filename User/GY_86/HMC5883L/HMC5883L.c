@@ -53,9 +53,9 @@ void Read_HMC5883L(void)//¶ÁÈ¡
 //	Magn_y=Magn_y;
 	//Magn_y=(Magn_y*HMC5883L_GAIN_Y)/10000;
 
-	stQuadrotor_State.HMC5883L_X = HMC5883L_X;
-	stQuadrotor_State.HMC5883L_Y = HMC5883L_Y;
-	stQuadrotor_State.HMC5883L_Z = HMC5883L_Z;
+	stQuadrotor_State.s16_HMC5883L_X = HMC5883L_X;
+	stQuadrotor_State.s16_HMC5883L_Y = HMC5883L_Y;
+	stQuadrotor_State.s16_HMC5883L_Z = HMC5883L_Z;
 
 	if (HMC5883L_X > 0x7fff)
 		HMC5883L_X -= 0xffff;
@@ -68,7 +68,7 @@ void Read_HMC5883L(void)//¶ÁÈ¡
 	if(HMC5883L_angle>360)
 		HMC5883L_angle=HMC5883L_angle-360;
 
-	stQuadrotor_State.HMC5883L_Angle = HMC5883L_angle;
+	stQuadrotor_State.f_HMC5883L_Angle = HMC5883L_angle;
 	stQuadrotor_State_DMA_BUFF = stQuadrotor_State;
 }
 

@@ -28,13 +28,13 @@ void init(void)
 	GPIO_Configuration( );	 
 	USART_Configuration( );		
 
+//初始化状态数据包
 	memset(&stQuadrotor_State, 0, sizeof(stQuadrotor_State));
-	stQuadrotor_State.DataHead1 = 0xFF;
-	stQuadrotor_State.DataHead2 = 0x7F;
-	stQuadrotor_State.DataSize = sizeof(stQuadrotor_State);
-	stQuadrotor_State.DataCheckValue = 123;
-	stQuadrotor_State.DataEnd = 0xFEFF;
-
+	stQuadrotor_State.u8_DataHead1 = 0xFF;
+	stQuadrotor_State.u8_DataHead2 = 0x7F;
+	stQuadrotor_State.u16_DataSize = sizeof(stQuadrotor_State);
+	stQuadrotor_State.u16_DataCheckValue = 123;
+	stQuadrotor_State.u16_DataEnd = 0xFEFF;
 	stQuadrotor_State_DMA_BUFF = stQuadrotor_State;
 	DMA_Configuration(&stQuadrotor_State_DMA_BUFF, sizeof(stQuadrotor_State_DMA_BUFF));
 		  	
@@ -49,7 +49,8 @@ void init(void)
 	EXIT_Configuration( );
 
 	// MPU6050_Init(); //初始化MPU6050	 
-	MPU6050_initialize();
+
+	MPU6050_initialize();	//初始化MPU6050(DMP方式)
 	DMP_Init();
 	
 

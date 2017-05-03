@@ -236,10 +236,10 @@ Yaw=arctan2(2wz+2xy, 1-2yy-2zz);
   //  printf("Yaw=%f, Pitch=%f, Roll=%f \n\r", Yaw, Pitch, Roll);
 //	DMA_Buff_In_16((u16)(system_time-time),30);
 
-    stQuadrotor_State.Yaw = Yaw.angle_cur;
-    stQuadrotor_State.Pitch = Pitch.angle_cur;
-    stQuadrotor_State.Roll = Roll.angle_cur;
-    stQuadrotor_State.High_Accel = High.Accel_cur;
+    stQuadrotor_State.f_Yaw = Yaw.angle_cur;
+    stQuadrotor_State.f_Pitch = Pitch.angle_cur;
+    stQuadrotor_State.f_Roll = Roll.angle_cur;
+    stQuadrotor_State.f_High_Accel = High.Accel_cur;
     stQuadrotor_State_DMA_BUFF = stQuadrotor_State;
     //DMA_Buff[TEMP3_INDEX + 2] = (u16)((int16_t)High.Accel_cur * 100);
 

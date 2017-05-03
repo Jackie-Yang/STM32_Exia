@@ -83,28 +83,28 @@ void set_motorPWM(u8 motor,u16 motorPWM)
 		{
 			TIM_OC4Init(TIM2, &PWM_TIM_OCInitStructure);			
     		TIM_OC4PreloadConfig(TIM2, TIM_OCPreload_Enable);
-			stQuadrotor_State.Motor1 = motorPWM;
+			stQuadrotor_State.u16_Motor1 = motorPWM;
 			break;
 		}
 		case 2:		//2号电机对应PA2,定时器通道3
 		{
 			TIM_OC3Init(TIM2, &PWM_TIM_OCInitStructure);
 			TIM_OC3PreloadConfig(TIM2, TIM_OCPreload_Enable);
-			stQuadrotor_State.Motor2 = motorPWM;
+			stQuadrotor_State.u16_Motor2 = motorPWM;
 			break;
 		}
 		case 3:	  //3号电机对应PA0,定时器通道1
 		{
 			TIM_OC1Init(TIM2, &PWM_TIM_OCInitStructure);
     		TIM_OC1PreloadConfig(TIM2, TIM_OCPreload_Enable);
-			stQuadrotor_State.Motor3 = motorPWM;
+			stQuadrotor_State.u16_Motor3 = motorPWM;
 			break;
 		}
 		case 4:	 //4号电机对应PA1,定时器通道2
 		{
 			TIM_OC2Init(TIM2, &PWM_TIM_OCInitStructure);
 			TIM_OC2PreloadConfig(TIM2, TIM_OCPreload_Enable);
-			stQuadrotor_State.Motor4 = motorPWM;
+			stQuadrotor_State.u16_Motor4 = motorPWM;
 			break;
 		}
 		default:break;
@@ -190,7 +190,7 @@ void TIM3_IRQHandler(void)
 {
 	u8 i;
     u16 val = 0;
-	__packed uint16_t *pData = &stQuadrotor_State.Rudd;
+	__packed uint16_t *pData = &stQuadrotor_State.u16_Rudd;
 	for (i = 0; i < 4; i++) 
 	{
         //struct TIM_Channel channel = Channels[i];
@@ -274,21 +274,19 @@ void TIM4_IRQHandler(void)   //TIM4中断
 		// AHRSupdate( );				//10ms一次姿态更新
 		Read_DMP();
 
-
- 
-		Roll_Set = 50.0 * (stQuadrotor_State.Aile - 1100.0) / 800.0 - 25.0;
-		Pitch_Set = -(50.0 * (stQuadrotor_State.Elev - 1100.0) / 800.0 - 25.0);
-		Yaw_Set =  -(100.0 * (stQuadrotor_State.Rudd - 1100.0) / 800.0 - 50.0);
+		Roll_Set = 50.0 * (stQuadrotor_State.u16_Aile - 1100.0) / 800.0 - 25.0;
+		Pitch_Set = -(50.0 * (stQuadrotor_State.u16_Elev - 1100.0) / 800.0 - 25.0);
+		Yaw_Set =  -(100.0 * (stQuadrotor_State.u16_Rudd - 1100.0) / 800.0 - 50.0);
 
 		PID_set(&Roll,Roll_Set);
 		PID_set(&Pitch,Pitch_Set);
 		PID_Gyro_set(&Yaw,Yaw_Set);
 	
-		set_motorPWM(2,stQuadrotor_State.Thro + Roll.PID_out + Yaw.PID_out);
-		set_motorPWM(4,stQuadrotor_State.Thro - Roll.PID_out + Yaw.PID_out);
+		set_motorPWM(2,stQuadrotor_State.u16_Thro + Roll.PID_out + Yaw.PID_out);
+		set_motorPWM(4,stQuadrotor_State.u16_Thro - Roll.PID_out + Yaw.PID_out);
 
-		set_motorPWM(1,stQuadrotor_State.Thro + Pitch.PID_out - Yaw.PID_out);
-		set_motorPWM(3,stQuadrotor_State.Thro - Pitch.PID_out - Yaw.PID_out);
+		set_motorPWM(1,stQuadrotor_State.u16_Thro + Pitch.PID_out - Yaw.PID_out);
+		set_motorPWM(3,stQuadrotor_State.u16_Thro - Pitch.PID_out - Yaw.PID_out);
 
 		//节省时间，每次只进行下列一种操作
 		if(KS10X_check++ >= 10)			 //每100ms进行一次超声波定高

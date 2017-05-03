@@ -67,7 +67,7 @@ void KS10X_Get_High(void)
 	if(result < 0x2c10)					//防止超过11.280m(最大值)
 	{
 		KS10X_high = result;
-		stQuadrotor_State.KS10X_High = KS10X_high;		//返回的值为毫米
+		stQuadrotor_State.u16_KS10X_High = KS10X_high;		//返回的值为毫米
 		stQuadrotor_State_DMA_BUFF = stQuadrotor_State;
 	}	
 	delay_us(80);
@@ -157,7 +157,8 @@ u8 KS10X_I2C_Wait_Ack(void)
 	while(READ_SDA)
 	{
 		if(WaitTime++>250)
-		{	
+		{
+			I2C_SCL = 0;
 			SDA_OUT(); 
 			I2C_Stop();	
 			return 0;
@@ -229,7 +230,8 @@ u8 KS10X_I2C_Read_Data(u8 ack)
 			receive++;   	//读到该位为1，+1（即置1）
 		}
 		delay_us(5); 
-    }		
+    }
+	I2C_SCL = 0;
 	SDA_OUT(); 			 
     if (ack)
 		KS10X_I2C_Ack();                   //发送ACK

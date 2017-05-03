@@ -88,14 +88,14 @@ void READ_MPU6050_Accel(void)
 	{
 		MPU6050_Accel_X = MPU6050_Accel_X + Accel_offset_X;
 	}
-	stQuadrotor_State.Accel_X = MPU6050_Accel_X;
+	stQuadrotor_State.s16_Accel_X = MPU6050_Accel_X;
 
 	MPU6050_Accel_Y = I2C_Read_16(MPU6050_Addr,ACCEL_YOUT_H);// + Accel_offset_Y;
 	if( (int32_t)MPU6050_Accel_Y + Accel_offset_Y <= 32768  &&  (int32_t)MPU6050_Accel_Y + Accel_offset_Y >= -32768)
 	{
 		MPU6050_Accel_Y = MPU6050_Accel_Y + Accel_offset_Y;
 	}
-	stQuadrotor_State.Accel_Y = MPU6050_Accel_Y;
+	stQuadrotor_State.s16_Accel_Y = MPU6050_Accel_Y;
 
 
 	MPU6050_Accel_Z = I2C_Read_16(MPU6050_Addr,ACCEL_ZOUT_H);// + Accel_offset_Z;
@@ -103,7 +103,7 @@ void READ_MPU6050_Accel(void)
 	{
 		MPU6050_Accel_Z = MPU6050_Accel_Z + Accel_offset_Z;
 	}
-	stQuadrotor_State.Accel_Z = MPU6050_Accel_Z;
+	stQuadrotor_State.s16_Accel_Z = MPU6050_Accel_Z;
 	stQuadrotor_State_DMA_BUFF = stQuadrotor_State;
 }
 
@@ -123,7 +123,7 @@ void READ_MPU6050_Gyro(void)
 	{
 		MPU6050_Gyro_X = MPU6050_Gyro_X + Gyro_offset_X;
 	}
-	stQuadrotor_State.Gyro_X = MPU6050_Gyro_X;
+	stQuadrotor_State.s16_Gyro_X = MPU6050_Gyro_X;
 
 
     MPU6050_Gyro_Y = I2C_Read_16(MPU6050_Addr,GYRO_YOUT_H);// + Gyro_offset_Y;
@@ -131,7 +131,7 @@ void READ_MPU6050_Gyro(void)
 	{
 		MPU6050_Gyro_Y = MPU6050_Gyro_Y + Gyro_offset_Y;
 	}
-	stQuadrotor_State.Gyro_Y = MPU6050_Gyro_Y;
+	stQuadrotor_State.s16_Gyro_Y = MPU6050_Gyro_Y;
 
 
 	MPU6050_Gyro_Z = I2C_Read_16(MPU6050_Addr,GYRO_ZOUT_H);// + Gyro_offset_Z;
@@ -139,7 +139,7 @@ void READ_MPU6050_Gyro(void)
 	{
 		MPU6050_Gyro_Z = MPU6050_Gyro_Z + Gyro_offset_Z;
 	}
-	stQuadrotor_State.Gyro_Z = MPU6050_Gyro_Z;
+	stQuadrotor_State.s16_Gyro_Z = MPU6050_Gyro_Z;
 	stQuadrotor_State_DMA_BUFF = stQuadrotor_State;
 }
 
@@ -200,8 +200,8 @@ void MPU6050_SetOffset(void)
 
 void READ_MPU6050_TEMP(void)
 {	
-	MPU6050_Temperature = I2C_Read_16( MPU6050_Addr,TEMP_OUT_H ) / 340.0 + 36.53;
-	stQuadrotor_State.MPU6050_Temp = MPU6050_Temperature;
+	MPU6050_Temperature = I2C_Read_16( MPU6050_Addr,TEMP_OUT_H ); // I2C_Read_16( MPU6050_Addr,TEMP_OUT_H ) / 340.0 + 36.53
+	stQuadrotor_State.s16_MPU6050_Temp = MPU6050_Temperature;		   //温度暂时没用，计算温度暂时交给上位机
 	stQuadrotor_State_DMA_BUFF = stQuadrotor_State;
 }
 
