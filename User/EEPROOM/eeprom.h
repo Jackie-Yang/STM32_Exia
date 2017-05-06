@@ -41,73 +41,69 @@
 #define ROLL_GYRO_KP_ADDR 0x0009
 #define ROLL_GYRO_KI_ADDR 0x000a
 #define ROLL_GYRO_KD_ADDR 0x000b
-#define ROLL_ANGLE_KP_ADDR	0x000c
-#define ROLL_ANGLE_KI_ADDR	0x000d
-#define ROLL_ANGLE_KD_ADDR	0x000e
+#define ROLL_ANGLE_KP_ADDR 0x000c
+#define ROLL_ANGLE_KI_ADDR 0x000d
+#define ROLL_ANGLE_KD_ADDR 0x000e
 
 #define PITCH_GYRO_KP_ADDR 0x000f
 #define PITCH_GYRO_KI_ADDR 0x0010
 #define PITCH_GYRO_KD_ADDR 0x0011
-#define PITCH_ANGLE_KP_ADDR	0x0012
-#define PITCH_ANGLE_KI_ADDR	0x0013
-#define PITCH_ANGLE_KD_ADDR	0x0014
+#define PITCH_ANGLE_KP_ADDR 0x0012
+#define PITCH_ANGLE_KI_ADDR 0x0013
+#define PITCH_ANGLE_KD_ADDR 0x0014
 
 #define YAW_GYRO_KP_ADDR 0x0015
 #define YAW_GYRO_KI_ADDR 0x0016
 #define YAW_GYRO_KD_ADDR 0x0017
 
 /* Variables' number */
-#define NumbOfVar               ((uint8_t)0x18)
-
-
-
+#define NumbOfVar ((uint8_t)0x18)
 
 /* Exported constants --------------------------------------------------------*/
 /* Define the STM32F10Xxx Flash page size depending on the used STM32 device */
-#if defined (STM32F10X_LD) || defined (STM32F10X_MD)
-  #define PAGE_SIZE  (uint16_t)0x400  /* Page size = 1KByte */
-#elif defined (STM32F10X_HD) || defined (STM32F10X_CL)
-  #define PAGE_SIZE  (uint16_t)0x800  /* Page size = 2KByte */
+#if defined(STM32F10X_LD) || defined(STM32F10X_MD)
+#define PAGE_SIZE (uint16_t)0x400 /* Page size = 1KByte */
+#elif defined(STM32F10X_HD) || defined(STM32F10X_CL)
+#define PAGE_SIZE (uint16_t)0x800 /* Page size = 2KByte */
 #endif
 
 /* EEPROM start address in Flash */
-#define EEPROM_START_ADDRESS    ((uint32_t)0x08010000) /* EEPROM emulation start address:
-                                                  after 64KByte of used Flash memory */
+#define EEPROM_START_ADDRESS ((uint32_t)0x08010000) /* EEPROM emulation start address: \
+                                               after 64KByte of used Flash memory */
 
 /* Pages 0 and 1 base and end addresses */
-#define PAGE0_BASE_ADDRESS      ((uint32_t)(EEPROM_START_ADDRESS + 0x000))
-#define PAGE0_END_ADDRESS       ((uint32_t)(EEPROM_START_ADDRESS + (PAGE_SIZE - 1)))
+#define PAGE0_BASE_ADDRESS ((uint32_t)(EEPROM_START_ADDRESS + 0x000))
+#define PAGE0_END_ADDRESS ((uint32_t)(EEPROM_START_ADDRESS + (PAGE_SIZE - 1)))
 
-#define PAGE1_BASE_ADDRESS      ((uint32_t)(EEPROM_START_ADDRESS + PAGE_SIZE))
-#define PAGE1_END_ADDRESS       ((uint32_t)(EEPROM_START_ADDRESS + (2 * PAGE_SIZE - 1)))
+#define PAGE1_BASE_ADDRESS ((uint32_t)(EEPROM_START_ADDRESS + PAGE_SIZE))
+#define PAGE1_END_ADDRESS ((uint32_t)(EEPROM_START_ADDRESS + (2 * PAGE_SIZE - 1)))
 
 /* Used Flash pages for EEPROM emulation */
-#define PAGE0                   ((uint16_t)0x0000)
-#define PAGE1                   ((uint16_t)0x0001)
+#define PAGE0 ((uint16_t)0x0000)
+#define PAGE1 ((uint16_t)0x0001)
 
 /* No valid page define */
-#define NO_VALID_PAGE           ((uint16_t)0x00AB)
+#define NO_VALID_PAGE ((uint16_t)0x00AB)
 
 /* Page status definitions */
-#define ERASED                  ((uint16_t)0xFFFF)     /* PAGE is empty */
-#define RECEIVE_DATA            ((uint16_t)0xEEEE)     /* PAGE is marked to receive data */
-#define VALID_PAGE              ((uint16_t)0x0000)     /* PAGE containing valid data */
+#define ERASED ((uint16_t)0xFFFF)       /* PAGE is empty */
+#define RECEIVE_DATA ((uint16_t)0xEEEE) /* PAGE is marked to receive data */
+#define VALID_PAGE ((uint16_t)0x0000)   /* PAGE containing valid data */
 
 /* Valid pages in read and write defines */
-#define READ_FROM_VALID_PAGE    ((uint8_t)0x00)
-#define WRITE_IN_VALID_PAGE     ((uint8_t)0x01)
+#define READ_FROM_VALID_PAGE ((uint8_t)0x00)
+#define WRITE_IN_VALID_PAGE ((uint8_t)0x01)
 
 /* Page full define */
-#define PAGE_FULL               ((uint8_t)0x80)
-
+#define PAGE_FULL ((uint8_t)0x80)
 
 
 /* Exported types ------------------------------------------------------------*/
 /* Exported macro ------------------------------------------------------------*/
 /* Exported functions ------------------------------------------------------- */
-uint16_t EE_Init(void);												 //初始化配置
-uint16_t EE_ReadVariable(uint16_t VirtAddress, uint16_t* Data);		 //从指定地址读取数据
-uint16_t EE_WriteVariable(uint16_t VirtAddress, uint16_t Data);		 //向指定地址写入数据
+uint16_t EE_Init(void);
+uint16_t EE_ReadVariable(uint16_t VirtAddress, uint16_t *Data);
+uint16_t EE_WriteVariable(uint16_t VirtAddress, uint16_t Data);
 
 #endif /* __EEPROM_H */
 

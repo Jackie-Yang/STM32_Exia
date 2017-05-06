@@ -41,79 +41,79 @@ void PID_init(void)
 	u16 read_temp;
 	EE_ReadVariable(ROLL_GYRO_KP_ADDR, &read_temp);
 	//DMA_Buff_In_16(read_temp,ROLL_GYRO_KP_INDEX);
-	stQuadrotor_State.u8_ROLL_G_Kp = (uint8_t)read_temp;
+	stQuadrotor_State.u16_ROLL_G_Kp = read_temp;
 	Roll.Gyro_Kp = ((float)read_temp) / 100.0;
 
 	EE_ReadVariable(ROLL_GYRO_KI_ADDR, &read_temp);
 	//DMA_Buff_In_16(read_temp,ROLL_GYRO_KI_INDEX);
-	stQuadrotor_State.u8_ROLL_G_Ki = (uint8_t)read_temp;
+	stQuadrotor_State.u16_ROLL_G_Ki = read_temp;
 	Roll.Gyro_Ki = ((float)read_temp) / 100.0;
 
 	EE_ReadVariable(ROLL_GYRO_KD_ADDR, &read_temp);
 	//DMA_Buff_In_16(read_temp,ROLL_GYRO_KD_INDEX);
-	stQuadrotor_State.u8_ROLL_G_Kd = (uint8_t)read_temp;
+	stQuadrotor_State.u16_ROLL_G_Kd = read_temp;
 	Roll.Gyro_Kd = ((float)read_temp) / 100.0;
 
 	EE_ReadVariable(ROLL_ANGLE_KP_ADDR, &read_temp);
 	//DMA_Buff_In_16(read_temp,ROLL_ANGLE_KP_INDEX);
-	stQuadrotor_State.u8_ROLL_Angle_Kp = (uint8_t)read_temp;
+	stQuadrotor_State.u16_ROLL_Angle_Kp = read_temp;
 	Roll.angle_Kp = ((float)read_temp) / 100.0;
 
 	EE_ReadVariable(ROLL_ANGLE_KI_ADDR, &read_temp);
 	//DMA_Buff_In_16(read_temp,ROLL_ANGLE_KI_INDEX);
-	stQuadrotor_State.u8_ROLL_Angle_Ki = (uint8_t)read_temp;
+	stQuadrotor_State.u16_ROLL_Angle_Ki = read_temp;
 	Roll.angle_Ki = ((float)read_temp) / 100.0;
 
 	EE_ReadVariable(ROLL_ANGLE_KD_ADDR, &read_temp);
 	//DMA_Buff_In_16(read_temp,ROLL_ANGLE_KD_INDEX);
-	stQuadrotor_State.u8_ROLL_Angle_Kd = (uint8_t)read_temp;
+	stQuadrotor_State.u16_ROLL_Angle_Kd = read_temp;
 	Roll.angle_Kd = ((float)read_temp) / 100.0;
 
 
 	EE_ReadVariable(PITCH_GYRO_KP_ADDR, &read_temp);
 	//DMA_Buff_In_16(read_temp,PITCH_GYRO_KP_INDEX);
-	stQuadrotor_State.u8_PITCH_G_Kp = (uint8_t)read_temp;
+	stQuadrotor_State.u16_PITCH_G_Kp = read_temp;
 	Pitch.Gyro_Kp = ((float)read_temp) / 100.0;
 
 	EE_ReadVariable(PITCH_GYRO_KI_ADDR, &read_temp);
 //	DMA_Buff_In_16(read_temp,PITCH_GYRO_KI_INDEX);
-	stQuadrotor_State.u8_PITCH_G_Ki = (uint8_t)read_temp;
+	stQuadrotor_State.u16_PITCH_G_Ki = read_temp;
 	Pitch.Gyro_Ki = ((float)read_temp) / 100.0;
 
 	EE_ReadVariable(PITCH_GYRO_KD_ADDR, &read_temp);
 //	DMA_Buff_In_16(read_temp,PITCH_GYRO_KD_INDEX);
-	stQuadrotor_State.u8_PITCH_G_Kd = (uint8_t)read_temp;
+	stQuadrotor_State.u16_PITCH_G_Kd = read_temp;
 	Pitch.Gyro_Kd = ((float)read_temp) / 100.0;
 
 	EE_ReadVariable(PITCH_ANGLE_KP_ADDR, &read_temp);
 //	DMA_Buff_In_16(read_temp,PITCH_ANGLE_KP_INDEX);
-	stQuadrotor_State.u8_PITCH_Angle_Kp = (uint8_t)read_temp;
+	stQuadrotor_State.u16_PITCH_Angle_Kp = read_temp;
 	Pitch.angle_Kp = ((float)read_temp) / 100.0;
 
 	EE_ReadVariable(PITCH_ANGLE_KI_ADDR, &read_temp);
 //	DMA_Buff_In_16(read_temp,PITCH_ANGLE_KI_INDEX);
-	stQuadrotor_State.u8_PITCH_Angle_Ki = (uint8_t)read_temp;
+	stQuadrotor_State.u16_PITCH_Angle_Ki = read_temp;
 	Pitch.angle_Ki = ((float)read_temp) / 100.0;
 
 	EE_ReadVariable(PITCH_ANGLE_KD_ADDR, &read_temp);
 //	DMA_Buff_In_16(read_temp,PITCH_ANGLE_KD_INDEX);
-	stQuadrotor_State.u8_PITCH_Angle_Kd = (uint8_t)read_temp;
+	stQuadrotor_State.u16_PITCH_Angle_Kd = read_temp;
 	Pitch.angle_Kd = ((float)read_temp) / 100.0;
 
 	//Yaw
 	EE_ReadVariable(YAW_GYRO_KP_ADDR, &read_temp);
 //	DMA_Buff_In_16(read_temp,YAW_GYRO_KP_INDEX);
-	stQuadrotor_State.u8_YAW_G_Kp = (uint8_t)read_temp;
+	stQuadrotor_State.u16_YAW_G_Kp = read_temp;
 	Yaw.Gyro_Kp = ((float)read_temp) / 100.0;
 
 	EE_ReadVariable(YAW_GYRO_KI_ADDR, &read_temp);
 //	DMA_Buff_In_16(read_temp,YAW_GYRO_KI_INDEX);
-	stQuadrotor_State.u8_YAW_G_Ki = (uint8_t)read_temp;
+	stQuadrotor_State.u16_YAW_G_Ki = read_temp;
 	Yaw.Gyro_Ki = ((float)read_temp) / 100.0;
 
 	EE_ReadVariable(YAW_GYRO_KD_ADDR, &read_temp);
 //	DMA_Buff_In_16(read_temp,YAW_GYRO_KD_INDEX);
-	stQuadrotor_State.u8_YAW_G_Kd = (uint8_t)read_temp;
+	stQuadrotor_State.u16_YAW_G_Kd = read_temp;
 	Yaw.Gyro_Kd = ((float)read_temp) / 100.0;
 	stQuadrotor_State_DMA_BUFF = stQuadrotor_State;
 }
