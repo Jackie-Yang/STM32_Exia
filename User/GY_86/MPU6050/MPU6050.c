@@ -1,10 +1,16 @@
 #include "MPU6050.h"
+#include "inv_mpu.h"
+#include "inv_mpu_dmp_motion_driver.h"
 #include "Setup.h"
 #include "eeprom.h"
 #include "USART.h"
 #include "I2C.h"
 #include "delay.h"
+#include "PID.h"
 #include "math.h"
+
+#define q30 1073741824.0f
+#define DEFAULT_MPU_HZ (500)
 
 /********************全局变量*****************************/
 int16_t MPU6050_Gyro_X = 0,MPU6050_Gyro_Y = 0,MPU6050_Gyro_Z = 0;
@@ -14,7 +20,9 @@ int16_t Accel_offset_X = 0,Accel_offset_Y = 0,Accel_offset_Z = 0;
 
 float MPU6050_Temperature = 0;
 
-
+static signed char gyro_orientation[9] = {-1, 0, 0,
+										  0, -1, 0,
+										  0, 0, 1};
 
 /************************************************************   
 * 函数名:Init_MPU6050   
@@ -212,4 +220,162 @@ void READ_MPU6050_TEMP(void)
 
 
 
+static void run_self_test(void)
+{
+	int result;
+	long gyro[3], accel[3];
 
+	result = mpu_run_self_test(gyro, accel);
+	if (result == 0x7)
+	{
+		/* Test passed. We can trust the gyro data here, so let's push it down
+         * to the DMP.
+         */
+		float sens;
+		unsigned short accel_sens;
+		mpu_get_gyro_sens(&sens);
+		gyro[0] = (long)(gyro[0] * sens);
+		gyro[1] = (long)(gyro[1] * sens);
+		gyro[2] = (long)(gyro[2] * sens);
+		dmp_set_gyro_bias(gyro);
+		mpu_get_accel_sens(&accel_sens);
+		accel[0] *= accel_sens;
+		accel[1] *= accel_sens;
+		accel[2] *= accel_sens;
+		dmp_set_accel_bias(accel);
+		// printf("setting bias succesfully ......\r\n");
+	}
+}
+
+static unsigned short inv_row_2_scale(const signed char *row)
+{
+	unsigned short b;
+
+	if (row[0] > 0)
+		b = 0;
+	else if (row[0] < 0)
+		b = 4;
+	else if (row[1] > 0)
+		b = 1;
+	else if (row[1] < 0)
+		b = 5;
+	else if (row[2] > 0)
+		b = 2;
+	else if (row[2] < 0)
+		b = 6;
+	else
+		b = 7; // error
+	return b;
+}
+
+static unsigned short inv_orientation_matrix_to_scalar(const signed char *mtx)
+{
+	unsigned short scalar;
+	scalar = inv_row_2_scale(mtx);
+	scalar |= inv_row_2_scale(mtx + 3) << 3;
+	scalar |= inv_row_2_scale(mtx + 6) << 6;
+	return scalar;
+}
+
+/**************************************************************************
+函数功能：MPU6050内置DMP的初始化
+入口参数：无
+返回  值：无
+**************************************************************************/
+void MPU6050_DMP_Init(void)
+{
+	// if (!MPU6050_testConnection())   //经常获取错误
+	// {
+	//     NVIC_SystemReset();
+	// }
+	//  printf("mpu_set_sensor complete ......\r\n");
+	if (!mpu_init())
+	{
+		if (!mpu_set_sensors(INV_XYZ_GYRO | INV_XYZ_ACCEL))
+		{
+			//  printf("mpu_set_sensor complete ......\r\n");
+		}
+		if (!mpu_configure_fifo(INV_XYZ_GYRO | INV_XYZ_ACCEL))
+		{
+			//  printf("mpu_configure_fifo complete ......\r\n");
+		}
+		if (!mpu_set_sample_rate(DEFAULT_MPU_HZ))
+		{
+			//  printf("mpu_set_sample_rate complete ......\r\n");
+		}
+		if (!dmp_load_motion_driver_firmware())
+		{
+			// printf("dmp_load_motion_driver_firmware complete ......\r\n");
+		}
+		if (!dmp_set_orientation(inv_orientation_matrix_to_scalar(gyro_orientation)))
+		{ //  printf("dmp_set_orientation complete ......\r\n");
+		}
+		if (!dmp_enable_feature(DMP_FEATURE_6X_LP_QUAT | DMP_FEATURE_TAP |
+								DMP_FEATURE_ANDROID_ORIENT | DMP_FEATURE_SEND_RAW_ACCEL | DMP_FEATURE_SEND_CAL_GYRO |
+								DMP_FEATURE_GYRO_CAL))
+		{ //  printf("dmp_enable_feature complete ......\r\n");
+		}
+		if (!dmp_set_fifo_rate(DEFAULT_MPU_HZ))
+		{ //  printf("dmp_set_fifo_rate complete ......\r\n");
+		}
+		run_self_test();
+		if (!mpu_set_dmp_state(1))
+		{ //  printf("mpu_set_dmp_state complete ......\r\n");
+		}
+		// if (!MPU6050_testConnection())   //经常获取错误
+		// {
+		//     NVIC_SystemReset();
+		// }
+	}
+	else
+	{
+		NVIC_SystemReset();
+	}
+}
+/**************************************************************************
+函数功能：读取MPU6050内置DMP的姿态信息
+入口参数：无
+返回  值：无
+**************************************************************************/
+void Read_MPU6050_DMP(void)
+{
+	unsigned long sensor_timestamp;
+	unsigned char more;
+	long quat[4];
+	short gyro[3], accel[3], sensors;
+	float dmp_q0 = 1.0f, dmp_q1 = 0.0f, dmp_q2 = 0.0f, dmp_q3 = 0.0f;
+
+	if (dmp_read_fifo(gyro, accel, quat, &sensor_timestamp, &sensors, &more))
+	{
+		return;
+	}
+	if (sensors & INV_WXYZ_QUAT)
+	{
+		dmp_q0 = quat[0] / q30;
+		dmp_q1 = quat[1] / q30;
+		dmp_q2 = quat[2] / q30;
+		dmp_q3 = quat[3] / q30;
+		stQuadrotor_State.s16_Accel_X = accel[0];
+		stQuadrotor_State.s16_Accel_Y = accel[1];
+		stQuadrotor_State.s16_Accel_Z = accel[2];
+
+		stQuadrotor_State.s16_Gyro_X = -gyro[0];
+		stQuadrotor_State.s16_Gyro_Y = -gyro[1];
+		stQuadrotor_State.s16_Gyro_Z = gyro[2];
+
+		Pitch.Gyro_cur = (float)stQuadrotor_State.s16_Gyro_X / 16.4;
+		Roll.Gyro_cur = (float)stQuadrotor_State.s16_Gyro_Y / 16.4;
+		Yaw.Gyro_cur = (float)stQuadrotor_State.s16_Gyro_Z / 16.4;
+
+		stQuadrotor_State.f_Roll = -asin(-2 * dmp_q1 * dmp_q3 + 2 * dmp_q0 * dmp_q2) * 57.3;
+		stQuadrotor_State.f_Pitch = -atan2(2 * dmp_q2 * dmp_q3 + 2 * dmp_q0 * dmp_q1, -2 * dmp_q1 * dmp_q1 - 2 * dmp_q2 * dmp_q2 + 1) * 57.3; // roll
+		stQuadrotor_State.f_Yaw = atan2(2 * (dmp_q1 * dmp_q2 + dmp_q0 * dmp_q3), dmp_q0 * dmp_q0 + dmp_q1 * dmp_q1 - dmp_q2 * dmp_q2 - dmp_q3 * dmp_q3) * 57.3;
+		Yaw.angle_cur = stQuadrotor_State.f_Yaw;
+		Pitch.angle_cur = stQuadrotor_State.f_Pitch;
+		Roll.angle_cur = stQuadrotor_State.f_Roll;
+		stQuadrotor_State_DMA_BUFF = stQuadrotor_State;
+		//  Dmp_Pitch = asin(-2 * dmp_q1 * dmp_q3 + 2 * dmp_q0* dmp_q2)* 57.3;
+		//  Dmp_Roll = atan2(2 * dmp_q2 * dmp_q3 + 2 * dmp_q0 * dmp_q1, -2 * dmp_q1 * dmp_q1 - 2 * dmp_q2* dmp_q2 + 1)* 57.3; // roll
+		//  Dmp_Yaw = 	atan2(2*(dmp_q1*dmp_q2 + dmp_q0*dmp_q3),dmp_q0*dmp_q0+dmp_q1*dmp_q1-dmp_q2*dmp_q2-dmp_q3*dmp_q3) * 57.3;
+	}
+}

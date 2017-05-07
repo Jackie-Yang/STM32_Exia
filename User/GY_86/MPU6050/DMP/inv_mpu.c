@@ -868,7 +868,7 @@ int mpu_init(void)
         return -1;
 #else
     /* Already disabled by setup_compass. */
-    if (mpu_set_bypass(0))
+    if (mpu_set_bypass(1))
         return -1;
 #endif
 
@@ -2392,7 +2392,7 @@ int mpu_set_dmp_state(unsigned char enable)
         /* Disable data ready interrupt. */
         set_int_enable(0);
         /* Disable bypass mode. */
-        mpu_set_bypass(0);
+        mpu_set_bypass(1);
         /* Keep constant sample rate, FIFO rate controlled by DMP. */
         mpu_set_sample_rate(st.chip_cfg.dmp_sample_rate);
         /* Remove FIFO elements. */

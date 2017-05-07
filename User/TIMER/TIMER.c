@@ -4,10 +4,11 @@
 #include "Setup.h"
 #include "IMU.h"
 #include "MPU6050.h"
+#include "HMC5883L.h"
 #include "MS5611.h"
 #include "PID.h"
 #include "KS10X.h"
-#include "MPU6050_DMP.h"
+
 static TIM_ICInitTypeDef  TIM_ICInitStructure = { 0 };
 
 TIM_OCInitTypeDef PWM_TIM_OCInitStructure = { 0 };
@@ -272,7 +273,8 @@ void TIM4_IRQHandler(void)   //TIM4中断
 		TIM_ClearITPendingBit(TIM4, TIM_IT_Update);  //清除TIM4更新中断标志
 
 		// AHRSupdate( );				//10ms一次姿态更新
-		Read_DMP();
+		Read_HMC5883L();
+		Read_MPU6050_DMP();
 
 		Roll_Set = 50.0 * (stQuadrotor_State.u16_Aile - 1100.0) / 800.0 - 25.0;
 		Pitch_Set = -(50.0 * (stQuadrotor_State.u16_Elev - 1100.0) / 800.0 - 25.0);

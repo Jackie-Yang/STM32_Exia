@@ -11,7 +11,6 @@
 #include "PID.h"
 #include "KS10X.h"
 #include "string.h"
-#include "MPU6050_DMP.h"
 
 
 Quadrotor_State stQuadrotor_State = {0};
@@ -47,17 +46,13 @@ void init(void)
 	NVIC_Configuration( );	
 	EXIT_Configuration( );
 
-	// MPU6050_Init(); //初始化MPU6050	 
+	// MPU6050_Init(); //初始化MPU6050
+	MPU6050_DMP_Init(); //初始化MPU6050(DMP方式)
 
-	MPU6050_initialize();	//初始化MPU6050(DMP方式)
-	DMP_Init();
-	
-
-	MS5611_Init();	
 	HMC5883L_Init();
-	
+	MS5611_Init();
 
-	// init_quaternion( );			//初始化四元数
+	// init_quaternion( );			//初始化四元数(非DMP下使用)
 	PID_init( );		   		//初始化PID参数，从flash读取
 
 	
