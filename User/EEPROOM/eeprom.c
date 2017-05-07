@@ -33,7 +33,31 @@
 uint16_t DataVar = 0;
 
 /* Virtual address defined by the user: 0xFFFF value is prohibited */
-extern uint16_t VirtAddVarTab[NumbOfVar];
+uint16_t VirtAddVarTab[NumbOfVar] = {
+    OFFSET_AX_ADDR,
+    OFFSET_AY_ADDR,
+    OFFSET_AZ_ADDR,
+    OFFSET_GX_ADDR,
+    OFFSET_GY_ADDR,
+    OFFSET_GZ_ADDR,
+    HMC5883L_OFFSET_X_ADDR,
+    HMC5883L_OFFSET_Y_ADDR,
+    HMC5883L_OFFSET_Z_ADDR,
+    ROLL_GYRO_KP_ADDR,
+    ROLL_GYRO_KI_ADDR,
+    ROLL_GYRO_KD_ADDR,
+    ROLL_ANGLE_KP_ADDR,
+    ROLL_ANGLE_KI_ADDR,
+    ROLL_ANGLE_KD_ADDR,
+    PITCH_GYRO_KP_ADDR,
+    PITCH_GYRO_KI_ADDR,
+    PITCH_GYRO_KD_ADDR,
+    PITCH_ANGLE_KP_ADDR,
+    PITCH_ANGLE_KI_ADDR,
+    PITCH_ANGLE_KD_ADDR,
+    YAW_GYRO_KP_ADDR,
+    YAW_GYRO_KI_ADDR,
+    YAW_GYRO_KD_ADDR};
 
 /* Private function prototypes -----------------------------------------------*/
 /* Private functions ---------------------------------------------------------*/
