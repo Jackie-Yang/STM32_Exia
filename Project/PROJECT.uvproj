@@ -345,7 +345,7 @@
               <MiscControls></MiscControls>
               <Define>STM32F10X_HD,USE_STDPERIPH_DRIVER</Define>
               <Undefine></Undefine>
-              <IncludePath>..\Libraries\CMSIS;..\Libraries\FWLIB\inc;..\Libraries\FWLIB\src;..\User;..\User\Setup;..\User\USART;..\User\Delay;..\User\TIMER;..\User\I2C_2.0;..\User\EEPROOM;..\User\GY_86\MPU6050;..\User\GY_86\MS5611;..\User\GY_86\HMC5883L;..\User\DMA;..\User\IMU;..\User\PID;..\User\filter;..\User\KS10X;..\User\GY_86\MPU6050\DMP</IncludePath>
+              <IncludePath>..\Libraries\CMSIS;..\Libraries\FWLIB\inc;..\Libraries\FWLIB\src;..\User;..\User\Setup;..\User\USART;..\User\Delay;..\User\TIMER;..\User\I2C_2.0;..\User\EEPROOM;..\User\GY_86\MPU6050;..\User\GY_86\MS5611;..\User\GY_86\HMC5883L;..\User\DMA;..\User\IMU;..\User\PID;..\User\filter;..\User\KS10X;..\User\GY_86\MPU6050\DMP;..\User\TIMER\LED_Blink;..\User\TIMER\Motor;..\User\TIMER\Receiver</IncludePath>
             </VariousControls>
           </Cads>
           <Aads>
@@ -552,6 +552,21 @@
               <FileName>inv_mpu_dmp_motion_driver.c</FileName>
               <FileType>1</FileType>
               <FilePath>..\User\GY_86\MPU6050\DMP\inv_mpu_dmp_motion_driver.c</FilePath>
+            </File>
+            <File>
+              <FileName>LED_Blink.c</FileName>
+              <FileType>1</FileType>
+              <FilePath>..\User\TIMER\LED_Blink\LED_Blink.c</FilePath>
+            </File>
+            <File>
+              <FileName>Motor.c</FileName>
+              <FileType>1</FileType>
+              <FilePath>..\User\TIMER\Motor\Motor.c</FilePath>
+            </File>
+            <File>
+              <FileName>Receiver.c</FileName>
+              <FileType>1</FileType>
+              <FilePath>..\User\TIMER\Receiver\Receiver.c</FilePath>
             </File>
           </Files>
         </Group>

@@ -218,15 +218,14 @@ void READ_MPU6050_TEMP(void)
 	stQuadrotor_State_DMA_BUFF = stQuadrotor_State;
 }
 
-
-
-static void run_self_test(void)
+void MPU6050_DMP_SelfTest(void)
 {
 	int result;
 	long gyro[3], accel[3];
 
 	result = mpu_run_self_test(gyro, accel);
-	if (result == 0x7)
+	// if (result == 0x7)	//DMP没集成地磁传感器，所以自检完只会等于3（加速度，角速度，地磁传感器各占一位）
+	if (result == 0x3)
 	{
 		/* Test passed. We can trust the gyro data here, so let's push it down
          * to the DMP.
@@ -318,7 +317,7 @@ void MPU6050_DMP_Init(void)
 		if (!dmp_set_fifo_rate(DEFAULT_MPU_HZ))
 		{ //  printf("dmp_set_fifo_rate complete ......\r\n");
 		}
-		run_self_test();
+		MPU6050_DMP_SelfTest();
 		if (!mpu_set_dmp_state(1))
 		{ //  printf("mpu_set_dmp_state complete ......\r\n");
 		}

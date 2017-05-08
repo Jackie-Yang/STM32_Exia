@@ -58,6 +58,7 @@ void MPU6050_SetOffset(void);		//对传感器进行零偏校正
 void READ_MPU6050_TEMP(void);		//读取传感器温度
 
 void MPU6050_DMP_Init(void);
+void MPU6050_DMP_SelfTest(void);
 void Read_MPU6050_DMP(void);
 
 #endif

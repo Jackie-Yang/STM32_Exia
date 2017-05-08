@@ -102,8 +102,9 @@ void USART1_IRQHandler()
 		{
 			case COMMAND_MPU6050_SETOFFSET:
 			{
-				MPU6050_SetOffset();
-				init_quaternion();
+				// MPU6050_SetOffset();
+				// init_quaternion();
+				MPU6050_DMP_SelfTest();
 				break;
 			}
 			case COMMAND_SET_HIGH_REF:
@@ -248,7 +249,6 @@ void USART1_IRQHandler()
 			case COMMAND_STOP:
 			{
 				stQuadrotor_State.u16_Thro = 1100;
-
 				stQuadrotor_State.u16_Aile = 1500;
 				stQuadrotor_State.u16_Elev = 1500;
 				stQuadrotor_State.u16_Rudd = 1500;
@@ -261,6 +261,10 @@ void USART1_IRQHandler()
 
 			case COMMAND_HORIZON:
 			{
+				if(!stQuadrotor_State.u16_Thro)
+				{
+					stQuadrotor_State.u16_Thro = 1100;
+				}
 				stQuadrotor_State.u16_Aile = 1500;
 				stQuadrotor_State.u16_Elev = 1500;
 				stQuadrotor_State.u16_Rudd = 1500;
@@ -675,7 +679,7 @@ void check_BT(void)      //检查蓝牙状态
 	  	//TIM_Cmd(TIM4, ENABLE);  			//使能TIM4,开始数据传输	
 		DMA_Cmd(DMA1_Channel4, ENABLE);	
 		USART_DMACmd(USART1,USART_DMAReq_Tx,ENABLE);
-		SetLEDBlinkMode(BT_Connect);
+		StartBlink(BT_Connect);
 		// LED_ON;		
 	  }	
 	  else
@@ -683,7 +687,7 @@ void check_BT(void)      //检查蓝牙状态
 	  //	TIM_Cmd(TIM4, DISABLE); 
 		DMA_Cmd(DMA1_Channel4, DISABLE); 
 		USART_DMACmd(USART1,USART_DMAReq_Tx,DISABLE);
-		SetLEDBlinkMode(BT_DisConnect);
+		StopBlink(BT_Connect);
 		// LED_OFF;
 	  }	
 }
