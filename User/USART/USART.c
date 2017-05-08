@@ -8,6 +8,8 @@
 #include "TIMER.h"
 #include "PID.h"
 #include "eeprom.h"
+#include "Motor.h"
+#include "LED_Blink.h"
 //#include "TIMER.h"
 //#define REC_LEN 1
 
@@ -672,15 +674,17 @@ void check_BT(void)      //检查蓝牙状态
 	  {
 	  	//TIM_Cmd(TIM4, ENABLE);  			//使能TIM4,开始数据传输	
 		DMA_Cmd(DMA1_Channel4, ENABLE);	
-		USART_DMACmd(USART1,USART_DMAReq_Tx,ENABLE);	
-		LED_ON;		
+		USART_DMACmd(USART1,USART_DMAReq_Tx,ENABLE);
+		SetLEDBlinkMode(BT_Connect);
+		// LED_ON;		
 	  }	
 	  else
 	  {
 	  //	TIM_Cmd(TIM4, DISABLE); 
 		DMA_Cmd(DMA1_Channel4, DISABLE); 
 		USART_DMACmd(USART1,USART_DMAReq_Tx,DISABLE);
-		LED_OFF;
+		SetLEDBlinkMode(BT_DisConnect);
+		// LED_OFF;
 	  }	
 }
 

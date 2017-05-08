@@ -11,11 +11,13 @@
 #include "PID.h"
 #include "KS10X.h"
 #include "string.h"
+#include "LED_Blink.h"
+#include "Receiver.h"
+#include "Motor.h"
 
 
 Quadrotor_State stQuadrotor_State = {0};
 Quadrotor_State stQuadrotor_State_DMA_BUFF = {0};
-
 
 /********************系统初始化,所有模块初始化函数的集合****************************/
 void init(void)
@@ -35,11 +37,16 @@ void init(void)
 	stQuadrotor_State.u16_DataEnd = 0xFEFF;
 	stQuadrotor_State_DMA_BUFF = stQuadrotor_State;
 	DMA_Configuration(&stQuadrotor_State_DMA_BUFF, sizeof(stQuadrotor_State_DMA_BUFF));
-		  	
-	TIM2_Init( );
-	TIM3_Init();	  
+
+	LED_Blink_Init();   //定时器1，LED闪烁
+	SetLEDBlinkMode(Blink_Init);	//LED闪烁：初始化
+
+	Motor_Init();		//定时器2，电机PWM输出
+	Receiver_Init();	//定时器3，输入信号捕获
 	
-	  
+	
+	
+
 	FLASH_Unlock();
 	EE_Init();
 		
@@ -55,16 +62,15 @@ void init(void)
 	// init_quaternion( );			//初始化四元数(非DMP下使用)
 	PID_init( );		   		//初始化PID参数，从flash读取
 
-	
-
 	KS10X_init( );    
 
-	check_BT();		//更新蓝牙状态
+	//MPU6050_SetOffset( );		//可将开机时状态设置为水平（非DMP下）
 
-	//MPU6050_SetOffset( );
+	UpdateTimer_Init(); //初始化定时器4，开始参数更新
 
-	TIM4_Init();//开启定时器4，开始参数更新
-	
+	SetLEDBlinkMode(0); //初始化完毕LED闪烁停止
+
+	check_BT(); //更新蓝牙状态
 }
 
 
@@ -99,13 +105,15 @@ void RCC_Configuration(void)
 	RCC_APB2PeriphClockCmd(RCC_APB2Periph_USART1,ENABLE);	
 
 
-	//电机PWM信号输出所用定时器2配置
-	RCC_APB1PeriphClockCmd(RCC_APB1Periph_TIM2, ENABLE);      //时钟配置
+	//电机PWM信号输出所用高级定时器1配置
+	RCC_APB2PeriphClockCmd(RCC_APB2Periph_TIM1, ENABLE);	  //时钟配置
+	
 	//接收器脉冲输入所用定时器3配置
 	RCC_APB1PeriphClockCmd(RCC_APB1Periph_TIM3, ENABLE);      //时钟配置
-	//定时器4中断时钟（定时向串口发送数据）
+	//定时器4中断时钟（定时向进行姿态解算）
 	RCC_APB1PeriphClockCmd(RCC_APB1Periph_TIM4, ENABLE);      //时钟配置
-
+	//定时器2中断时钟（LED闪烁）
+	RCC_APB1PeriphClockCmd(RCC_APB1Periph_TIM2, ENABLE); //时钟配置
 
 	/*GPIO时钟配置：
 	GPIOA:蓝牙串口,接受器输入引脚 ,电机PWM信号输出
@@ -250,7 +258,13 @@ void NVIC_Configuration(void)
 	NVIC_InitStructure.NVIC_IRQChannelCmd = ENABLE;
 	NVIC_Init(&NVIC_InitStructure);
 
-		//定时器4中断优先级NVIC设置
+	NVIC_InitStructure.NVIC_IRQChannel = TIM1_UP_IRQn; //NVIC配置
+	NVIC_InitStructure.NVIC_IRQChannelPreemptionPriority = 0;
+	NVIC_InitStructure.NVIC_IRQChannelSubPriority = 1;
+	NVIC_InitStructure.NVIC_IRQChannelCmd = ENABLE;
+	NVIC_Init(&NVIC_InitStructure);
+
+	//定时器4中断优先级NVIC设置
 	NVIC_InitStructure.NVIC_IRQChannel = TIM4_IRQn;             //TIM4中断
 	NVIC_InitStructure.NVIC_IRQChannelPreemptionPriority = 1;   //抢占优先级1级
 	NVIC_InitStructure.NVIC_IRQChannelSubPriority = 0;          //响应优先级0级
