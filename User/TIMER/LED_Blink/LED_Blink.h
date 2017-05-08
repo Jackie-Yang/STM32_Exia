@@ -19,16 +19,23 @@
 #define BLINK_LOOP -1
 #define BLINK_KEEP -2
 #define BLINK_STOP -3
-typedef struct _LED_BLINK_MODE_
+typedef const struct _LED_BLINK_MODE_
 {
     int8_t Status;
     uint32_t Time;
 } LED_BlinkMode, *pLED_BlinkMode;
 
-extern const LED_BlinkMode Blink_Init[];
-extern const LED_BlinkMode BT_Connect[];
-extern const LED_BlinkMode BT_DisConnect[];
+typedef struct _BLINK_STACK_NODE_
+{
+    pLED_BlinkMode pBlinkMode;
+    struct _BLINK_STACK_NODE_* Next;
+} BlinkStackNode, *pBlinkStackNode;
+
+extern LED_BlinkMode Blink_Init[];
+extern LED_BlinkMode BT_Connect[];
+extern LED_BlinkMode BT_DisConnect[];
 
 void LED_Blink_Init(void); //定时器1初始化，用于LED闪烁
-void SetLEDBlinkMode(const LED_BlinkMode *pBlinkMode);
+void StartBlink(pLED_BlinkMode pBlinkMode);
+void StopBlink(pLED_BlinkMode pBlinkMode);
 #endif

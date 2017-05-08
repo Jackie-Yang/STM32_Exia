@@ -1,37 +1,31 @@
 #include "LED_Blink.h"
+#include "stdlib.h"
 
 //初始化中
-const LED_BlinkMode Blink_Init[] = {
+LED_BlinkMode Blink_Init[] = {
     {1, 100},
     {0, 100},
     {BLINK_LOOP, 0}};
 
 //蓝牙连接
-const LED_BlinkMode BT_Connect[] = {
+LED_BlinkMode BT_Connect[] = {
     {1, 300},
     {0, 300},
     {1, 300},
     {0, 300},
     {1, 300},
     {0, 300},
-    {BLINK_STOP, 0}};
+    {BLINK_LOOP, 0}};
 
-const LED_BlinkMode BT_DisConnect[] = {
-    {1, 100},
-    {0, 100},
-    {1, 100},
-    {0, 100},
-    {1, 100},
-    {0, 100},
-    {BLINK_STOP, 0}};
 
 uint32_t BlinkCount = 0;        //计数
 uint32_t BlinkTimeCount = 0;    //计时
-const LED_BlinkMode *pCurBlinkMode = 0; //当前模式
+pLED_BlinkMode pCurBlinkMode = 0; //当前模式
+pBlinkStackNode pBlinkStack = 0;
 
 void LED_Blink_Init(void)
 {
-    TIM_TimeBaseInitTypeDef TIM_TimeBaseStructure;
+    TIM_TimeBaseInitTypeDef TIM_TimeBaseStructure = {0};
 
     //定时器TIM1初始化
     TIM_TimeBaseStructInit(&TIM_TimeBaseStructure);
@@ -52,62 +46,145 @@ void TIM1_UP_IRQHandler(void) //TIM1中断
     if (TIM_GetITStatus(TIM1, TIM_IT_Update) != RESET) //检查TIM1更新中断发生与否
     {
         TIM_ClearITPendingBit(TIM1, TIM_IT_Update); //清除TIM1更新中断标志
-        if (pCurBlinkMode)
+
+        if (pCurBlinkMode)  //当前存在闪烁模式，进行计时
         {
-            BlinkTimeCount += 10;
+            BlinkTimeCount += 10;   //计时，定时器中断设置成10ms，因此每次加10
             if (BlinkTimeCount >= (pCurBlinkMode + BlinkCount)->Time)
             {
-                ++BlinkCount;
+                ++BlinkCount;   //时间到，灯切换到下一个状态
                 BlinkTimeCount = 0;
-                if ((pCurBlinkMode + BlinkCount)->Status == BLINK_LOOP)
-                {
-                    BlinkCount = 0;
-                }
-                if ((pCurBlinkMode + BlinkCount)->Status == 1) //Set First Status
-                {
-                    LED_ON;
-                }
-                else if ((pCurBlinkMode + BlinkCount)->Status == 0)
-                {
-                    LED_OFF;
-                }
-                else if ((pCurBlinkMode + BlinkCount)->Status == BLINK_KEEP)    //Keep Last Status
-                {
-                    BlinkCount = 0;
-                    BlinkTimeCount = 0;
-                    pCurBlinkMode = 0;
-                }
-                else //if ((pCurBlinkMode + BlinkCount)->Status == BLINK_STOP)
-                {
-                    BlinkCount = 0;
-                    BlinkTimeCount = 0;
-                    pCurBlinkMode = 0;
-                    LED_OFF;
-                }
             }
         }
-    }
-}
+        else
+        {
+            if (pBlinkStack) //当前不存在闪烁模式，从栈顶拿
+            {
+                pCurBlinkMode = pBlinkStack->pBlinkMode;    //闪灯模式设置为栈中最前的模式
+                BlinkTimeCount = 0;
+                BlinkCount = 0;
+            }
+            else
+            {
+                return; //仍无闪灯模式
+            }
+        }
 
-void SetLEDBlinkMode(const LED_BlinkMode *pBlinkMode)
-{
-    //复位闪烁模式，闪烁计数、闪烁计时
-    pCurBlinkMode = pBlinkMode;
-    BlinkCount = 0;
-    BlinkTimeCount = 0;
-    if (pCurBlinkMode)
-    {
-        if (pCurBlinkMode->Status == 1) //Set First Status
+        //循环的闪灯模式，如果当前模式为栈顶，则继续循环，否则会设置成栈顶的模式
+        if ((pCurBlinkMode + BlinkCount)->Status == BLINK_LOOP)
+        {
+            if (!pBlinkStack)
+            {
+                pCurBlinkMode = 0;
+                return; //闪灯模式已经全部被移除出栈
+            }
+            //如果设置了新的闪灯模式，就换成新的闪灯模式
+            pCurBlinkMode = pBlinkStack->pBlinkMode;
+            BlinkCount = 0;
+        }
+        //保持LED灯最后的状态并结束当前闪灯模式，将切换到栈顶的模式
+        else if ((pCurBlinkMode + BlinkCount)->Status == BLINK_KEEP)
+        {
+            StopBlink(pCurBlinkMode);
+            if (!pBlinkStack)
+            {
+                pCurBlinkMode = 0;
+                return; //闪灯模式已经全部被移除出栈
+            }
+            //设置成栈顶的模式
+            pCurBlinkMode = pBlinkStack->pBlinkMode;
+            BlinkCount = 0;
+        }
+        //关闭LED灯并结束当前闪灯模式，将切换到栈顶的模式
+        else if ((pCurBlinkMode + BlinkCount)->Status == BLINK_STOP)
+        {
+            LED_OFF;
+            StopBlink(pCurBlinkMode);
+            if (!pBlinkStack)
+            {
+                pCurBlinkMode = 0;
+                return; //闪灯模式已经全部被移除出栈
+            }
+            //设置成栈顶的模式
+            pCurBlinkMode = pBlinkStack->pBlinkMode;
+            BlinkCount = 0;
+        }
+
+        if ((pCurBlinkMode + BlinkCount)->Status == 1) //Set First Status
         {
             LED_ON;
         }
-        else if (pCurBlinkMode->Status == 0)
+        else if ((pCurBlinkMode + BlinkCount)->Status == 0)
         {
             LED_OFF;
         }
+        
     }
-    else    //Empty Mode，Turn Off LED
+}
+
+//将新的闪烁模式插入到栈顶，如果当前有正在运行的闪烁模式，会将当前闪烁模式跑完一次才会切换到新的模式
+void StartBlink(pLED_BlinkMode pBlinkMode)
+{
+    pBlinkStackNode pPreNode = 0;
+    pBlinkStackNode pNode = pBlinkStack;
+    if (pBlinkMode)
     {
-        LED_OFF;
+        while (pNode)   //若链表中找到该节点，取出来放到链表头，保证链表中的模式不重复
+        {
+            if (pNode->pBlinkMode == pBlinkMode)
+            {
+                //将该节点从链表中除去
+                if (pPreNode)
+                {
+                    pPreNode->Next = pNode->Next;
+                }
+                else //该节点是首结点
+                {
+                    pBlinkStack = pNode->Next;
+                }
+                break;
+            }
+            pPreNode = pNode;
+            pNode = pNode->Next;
+        }
+
+        if (!pNode) //链表中没有该节点，分配节点
+        {
+            pNode = malloc(sizeof(BlinkStackNode));
+            if (!pNode)
+            {
+                return;
+            }
+        }
+        
+        pNode->pBlinkMode = pBlinkMode;
+        pNode->Next = pBlinkStack;
+        pBlinkStack = pNode;
+    }
+}
+
+//能自己End的闪烁模式不要去Stop，由于它会自己释放，否则如果刚好Stop时定时器将它释放了可能会冲突
+void StopBlink(pLED_BlinkMode pBlinkMode)
+{
+    pBlinkStackNode pPreNode = 0;
+    pBlinkStackNode pNode = pBlinkStack;
+    while (pNode)
+    {
+        if (pNode->pBlinkMode == pBlinkMode)
+        {
+            //将该节点从链表中除去
+            if (pPreNode)
+            {
+                pPreNode->Next = pNode->Next;
+            }
+            else    //该节点是首结点
+            {
+                pBlinkStack = pNode->Next;
+            }
+            free(pNode);
+            return;
+        }
+        pPreNode = pNode;
+        pNode = pNode->Next;
     }
 }

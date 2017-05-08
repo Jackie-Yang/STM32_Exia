@@ -26,9 +26,12 @@ void init(void)
 	delay_ms(500);				//上电先延时一小段时间，否则mpu6050会初始化失败
 
 	GPIO_Configuration( );	 
-	USART_Configuration( );		
+	USART_Configuration( );
+	NVIC_Configuration();
+	FLASH_Unlock();
+	EE_Init();
 
-//初始化状态数据包
+	//初始化状态数据包
 	memset(&stQuadrotor_State, 0, sizeof(stQuadrotor_State));
 	stQuadrotor_State.u8_DataHead1 = 0xFF;
 	stQuadrotor_State.u8_DataHead2 = 0x7F;
@@ -38,39 +41,31 @@ void init(void)
 	stQuadrotor_State_DMA_BUFF = stQuadrotor_State;
 	DMA_Configuration(&stQuadrotor_State_DMA_BUFF, sizeof(stQuadrotor_State_DMA_BUFF));
 
+	EXIT_Configuration(); //配置外部中断，蓝牙连接时触发
+	check_BT();			  //更新蓝牙状态
+
 	LED_Blink_Init();   //定时器1，LED闪烁
-	SetLEDBlinkMode(Blink_Init);	//LED闪烁：初始化
-
-	Motor_Init();		//定时器2，电机PWM输出
-	Receiver_Init();	//定时器3，输入信号捕获
-	
-	
-	
-
-	FLASH_Unlock();
-	EE_Init();
-		
-	NVIC_Configuration( );	
-	EXIT_Configuration( );
+	StartBlink(Blink_Init); //LED闪烁：初始化
 
 	// MPU6050_Init(); //初始化MPU6050
+	//MPU6050_SetOffset( );		//可将开机时状态设置为水平（非DMP下）
 	MPU6050_DMP_Init(); //初始化MPU6050(DMP方式)
-
 	HMC5883L_Init();
 	MS5611_Init();
 
 	// init_quaternion( );			//初始化四元数(非DMP下使用)
 	PID_init( );		   		//初始化PID参数，从flash读取
 
-	KS10X_init( );    
+	KS10X_init( );    //初始化超声波传感器
 
-	//MPU6050_SetOffset( );		//可将开机时状态设置为水平（非DMP下）
+	
+
+	Motor_Init();	//定时器2，电机PWM输出
+	Receiver_Init(); //定时器3，输入信号捕获
 
 	UpdateTimer_Init(); //初始化定时器4，开始参数更新
 
-	SetLEDBlinkMode(0); //初始化完毕LED闪烁停止
-
-	check_BT(); //更新蓝牙状态
+	StopBlink(Blink_Init);  //初始化完毕LED闪烁停止
 }
 
 
