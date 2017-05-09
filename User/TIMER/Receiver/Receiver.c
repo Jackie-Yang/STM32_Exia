@@ -141,5 +141,4 @@ void TIM3_IRQHandler(void)
             }
         }
     }
-    stQuadrotor_State_DMA_BUFF = stQuadrotor_State;
 }

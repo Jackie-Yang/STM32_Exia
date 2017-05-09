@@ -20,60 +20,58 @@ float init_ax, init_ay, init_az, init_gx, init_gy, init_gz, init_mx, init_my, in
 
 
 
-
-
-
-void init_quaternion(void)
+void init_quaternion(int16_t *Accel, int16_t *Mag, __packed float *MagAngle)
 { 
  // unsigned long timestamp;
  // signed short int accel[3], mag[3];
   float init_Yaw, init_Pitch, init_Roll;
 
-  READ_MPU6050_Accel();
-    
+  READ_MPU6050_Accel(Accel);
 
-	  	    
-	  init_ax=(float)(MPU6050_Accel_X / 16384.0f);	   //单位转化成重力加速度的单位：m/s2
-	  init_ay=(float)(MPU6050_Accel_Y / 16384.0f);
-      init_az=(float)(MPU6050_Accel_Z / 16384.0f);
+  init_ax = (float)(Accel[0] / 16384.0f); //单位转化成重力加速度的单位：m/s2
+  init_ay = (float)(Accel[1] / 16384.0f);
+  init_az = (float)(Accel[2] / 16384.0f);
 
-	  Read_HMC5883L();
- 
-	  init_mx =(float)HMC5883L_X;						
-	  init_my =(float)HMC5883L_Y;
-	  init_mz =(float)-HMC5883L_Z;
+  Read_HMC5883L(Mag, MagAngle);
 
-		//陀螺仪y轴为前进方向    
-		init_Roll = -atan2(init_ax, init_az);    //算出的单位是弧度，如需要观察则应乘以57.3转化为角度
-		init_Pitch=  asin(init_ay);              //init_Pitch = asin(ay / 1);      
-		init_Yaw  =  atan2(init_mx*cos(init_Roll) + init_my*sin(init_Roll)*sin(init_Pitch) + init_mz*sin(init_Roll)*cos(init_Pitch),
-		                   init_my*cos(init_Pitch) - init_mz*sin(init_Pitch));//类似于atan2(my, mx)，其中的init_Roll和init_Pitch是弧度
-		if(init_Yaw < 0){init_Yaw = init_Yaw + 2*3.141593;}
-		if(init_Yaw > 360){init_Yaw = init_Yaw - 2*3.141593;}				            
-		//将初始化欧拉角转换成初始化四元数，注意sin(a)的位置的不同，可以确定绕xyz轴转动是Pitch还是Roll还是Yaw，按照ZXY顺序旋转,Qzyx=Qz*Qy*Qx，其中的init_YawRollPtich是角度        
-		q0 = cos(0.5*init_Roll)*cos(0.5*init_Pitch)*cos(0.5*init_Yaw) - sin(0.5*init_Roll)*sin(0.5*init_Pitch)*sin(0.5*init_Yaw);  //w
-		q1 = cos(0.5*init_Roll)*sin(0.5*init_Pitch)*cos(0.5*init_Yaw) - sin(0.5*init_Roll)*cos(0.5*init_Pitch)*sin(0.5*init_Yaw);  //x   绕x轴旋转是pitch
-		q2 = sin(0.5*init_Roll)*cos(0.5*init_Pitch)*cos(0.5*init_Yaw) + cos(0.5*init_Roll)*sin(0.5*init_Pitch)*sin(0.5*init_Yaw);  //y   绕y轴旋转是roll
-		q3 = cos(0.5*init_Roll)*cos(0.5*init_Pitch)*sin(0.5*init_Yaw) + sin(0.5*init_Roll)*sin(0.5*init_Pitch)*cos(0.5*init_Yaw);  //z   绕z轴旋转是Yaw
+  init_mx = (float)Mag[0];
+  init_my = (float)Mag[1];
+  init_mz = (float)-Mag[2];
 
+  //陀螺仪y轴为前进方向
+  init_Roll = -atan2(init_ax, init_az); //算出的单位是弧度，如需要观察则应乘以57.3转化为角度
+  init_Pitch = asin(init_ay);           //init_Pitch = asin(ay / 1);
+  init_Yaw = atan2(init_mx * cos(init_Roll) + init_my * sin(init_Roll) * sin(init_Pitch) + init_mz * sin(init_Roll) * cos(init_Pitch),
+                   init_my * cos(init_Pitch) - init_mz * sin(init_Pitch)); //类似于atan2(my, mx)，其中的init_Roll和init_Pitch是弧度
+  if (init_Yaw < 0)
+  {
+      init_Yaw = init_Yaw + 2 * 3.141593;
+  }
+  if (init_Yaw > 360)
+  {
+      init_Yaw = init_Yaw - 2 * 3.141593;
+  }
+  //将初始化欧拉角转换成初始化四元数，注意sin(a)的位置的不同，可以确定绕xyz轴转动是Pitch还是Roll还是Yaw，按照ZXY顺序旋转,Qzyx=Qz*Qy*Qx，其中的init_YawRollPtich是角度
+  q0 = cos(0.5 * init_Roll) * cos(0.5 * init_Pitch) * cos(0.5 * init_Yaw) - sin(0.5 * init_Roll) * sin(0.5 * init_Pitch) * sin(0.5 * init_Yaw); //w
+  q1 = cos(0.5 * init_Roll) * sin(0.5 * init_Pitch) * cos(0.5 * init_Yaw) - sin(0.5 * init_Roll) * cos(0.5 * init_Pitch) * sin(0.5 * init_Yaw); //x   绕x轴旋转是pitch
+  q2 = sin(0.5 * init_Roll) * cos(0.5 * init_Pitch) * cos(0.5 * init_Yaw) + cos(0.5 * init_Roll) * sin(0.5 * init_Pitch) * sin(0.5 * init_Yaw); //y   绕y轴旋转是roll
+  q3 = cos(0.5 * init_Roll) * cos(0.5 * init_Pitch) * sin(0.5 * init_Yaw) + sin(0.5 * init_Roll) * sin(0.5 * init_Pitch) * cos(0.5 * init_Yaw); //z   绕z轴旋转是Yaw
 
+  //陀螺仪x轴为前进方向
+  //  init_Roll  = atan2(init_ay, init_az);
+  //  init_Pitch = -asin(init_ax);              //init_Pitch = asin(ax / 1);
+  //  init_Yaw   = -atan2(init_mx*cos(init_Roll) + init_my*sin(init_Roll)*sin(init_Pitch) + init_mz*sin(init_Roll)*cos(init_Pitch),
+  //                      init_my*cos(init_Pitch) - init_mz*sin(init_Pitch));                       //atan2(mx, my);
+  //  q0 = cos(0.5*init_Roll)*cos(0.5*init_Pitch)*cos(0.5*init_Yaw) + sin(0.5*init_Roll)*sin(0.5*init_Pitch)*sin(0.5*init_Yaw);  //w
+  //  q1 = sin(0.5*init_Roll)*cos(0.5*init_Pitch)*cos(0.5*init_Yaw) - cos(0.5*init_Roll)*sin(0.5*init_Pitch)*sin(0.5*init_Yaw);  //x   绕x轴旋转是roll
+  //  q2 = cos(0.5*init_Roll)*sin(0.5*init_Pitch)*cos(0.5*init_Yaw) + sin(0.5*init_Roll)*cos(0.5*init_Pitch)*sin(0.5*init_Yaw);  //y   绕y轴旋转是pitch
+  //  q3 = cos(0.5*init_Roll)*cos(0.5*init_Pitch)*sin(0.5*init_Yaw) - sin(0.5*init_Roll)*sin(0.5*init_Pitch)*cos(0.5*init_Yaw);  //z   绕z轴旋转是Yaw
 
-//陀螺仪x轴为前进方向
-//  init_Roll  = atan2(init_ay, init_az);
-//  init_Pitch = -asin(init_ax);              //init_Pitch = asin(ax / 1);      
-//  init_Yaw   = -atan2(init_mx*cos(init_Roll) + init_my*sin(init_Roll)*sin(init_Pitch) + init_mz*sin(init_Roll)*cos(init_Pitch),
-//                      init_my*cos(init_Pitch) - init_mz*sin(init_Pitch));                       //atan2(mx, my);
-//  q0 = cos(0.5*init_Roll)*cos(0.5*init_Pitch)*cos(0.5*init_Yaw) + sin(0.5*init_Roll)*sin(0.5*init_Pitch)*sin(0.5*init_Yaw);  //w
-//  q1 = sin(0.5*init_Roll)*cos(0.5*init_Pitch)*cos(0.5*init_Yaw) - cos(0.5*init_Roll)*sin(0.5*init_Pitch)*sin(0.5*init_Yaw);  //x   绕x轴旋转是roll
-//  q2 = cos(0.5*init_Roll)*sin(0.5*init_Pitch)*cos(0.5*init_Yaw) + sin(0.5*init_Roll)*cos(0.5*init_Pitch)*sin(0.5*init_Yaw);  //y   绕y轴旋转是pitch
-//  q3 = cos(0.5*init_Roll)*cos(0.5*init_Pitch)*sin(0.5*init_Yaw) - sin(0.5*init_Roll)*sin(0.5*init_Pitch)*cos(0.5*init_Yaw);  //z   绕z轴旋转是Yaw
- 	    
-    //	printf("初始化四元数：Yaw=%f, Pitch=%f, Roll=%f \n\r", init_Yaw*57.295780, init_Pitch*57.295780, init_Roll*57.295780);
+  //	printf("初始化四元数：Yaw=%f, Pitch=%f, Roll=%f \n\r", init_Yaw*57.295780, init_Pitch*57.295780, init_Roll*57.295780);
   	
 }
 
-
-void AHRSupdate(void) 
+void AHRSupdate(int16_t *Accel, int16_t *Gyro, int16_t *Mag, __packed float *MagAngle)
 {
 	//u32 time = system_time;
 
@@ -101,35 +99,31 @@ void AHRSupdate(void)
    float Pitch_temp,Roll_temp;	//弧度值
    float Accel_x,Accel_y,Accel_z;
 
-    READ_MPU6050_Accel();
-	READ_MPU6050_Gyro();
-	Read_HMC5883L();
+   READ_MPU6050_Accel(Accel);
+   READ_MPU6050_Gyro(Gyro);
+   Read_HMC5883L(Mag, MagAngle);
 
-	ax = (float)MPU6050_Accel_X;
-	Accel_x = ax / 16384.0f;
-	ay = (float)MPU6050_Accel_Y;
-	Accel_y = ay / 16384.0f;
-	az = (float)MPU6050_Accel_Z;
-	Accel_z = az / 16384.0f;
+   ax = (float)Accel[0];
+   Accel_x = ax / 16384.0f;
+   ay = (float)Accel[1];
+   Accel_y = ay / 16384.0f;
+   az = (float)Accel[2];
+   Accel_z = az / 16384.0f;
 
+   Pitch.Gyro_cur = (float)Gyro[0] / 131.0;
+   gx = Pitch.Gyro_cur / 57.3;
 
-	Pitch.Gyro_cur = (float)MPU6050_Gyro_X / 131.0;
-	gx = Pitch.Gyro_cur / 57.3;
+   Roll.Gyro_cur = (float)Gyro[1] / 131.0;
+   gy = Roll.Gyro_cur / 57.3;
 
-	Roll.Gyro_cur = (float)MPU6050_Gyro_Y / 131.0;
-	gy = Roll.Gyro_cur / 57.3;
+   Yaw.Gyro_cur = (float)Gyro[2] / 131.0;
+   gz = Yaw.Gyro_cur / 57.3;
 
-	Yaw.Gyro_cur = (float)MPU6050_Gyro_Z / 131.0;
-	gz = Yaw.Gyro_cur / 57.3;
+   mx = (float)Mag[0];
+   my = (float)Mag[1];
+   mz = -(float)Mag[2];
 
-
-	mx = (float)HMC5883L_X;
-	my = (float)HMC5883L_Y;
-	mz = -(float)HMC5883L_Z;
-
-
-          
-/*归一化测量值，加速度计和磁力计的单位是什么都无所谓，因为它们在此被作了归一化处理*/        
+   /*归一化测量值，加速度计和磁力计的单位是什么都无所谓，因为它们在此被作了归一化处理*/        
    //normalise the measurements
    norm = invSqrt(ax*ax + ay*ay + az*az);       
    ax = ax * norm;
@@ -240,7 +234,6 @@ Yaw=arctan2(2wz+2xy, 1-2yy-2zz);
     stQuadrotor_State.f_Pitch = Pitch.angle_cur;
     stQuadrotor_State.f_Roll = Roll.angle_cur;
     stQuadrotor_State.f_High_Accel = High.Accel_cur;
-    stQuadrotor_State_DMA_BUFF = stQuadrotor_State;
     //DMA_Buff[TEMP3_INDEX + 2] = (u16)((int16_t)High.Accel_cur * 100);
 
 }

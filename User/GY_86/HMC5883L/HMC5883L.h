@@ -18,16 +18,10 @@
 #define HMC5883L_Output_Y_MSB            0x07
 #define HMC5883L_Output_Y_LSB 			 0x08
 
-
-
-extern int16_t HMC5883L_X,HMC5883L_Y,HMC5883L_Z;
-extern int16_t HMC5883L_X_offset,HMC5883L_Y_offset,HMC5883L_Z_offset;
-extern float HMC5883L_angle;
+extern int16_t Mag_Offset[];
 
 void HMC5883L_Init(void);			//模块初始化，配置相关寄存器
-void Read_HMC5883L(void);			//读取磁场数据
-void HMC5883L_SetOffset(void);		//做简单的校正
-
-
+void Read_HMC5883L(int16_t *Mag, __packed float *MagAngle); //读取磁场数据
+void HMC5883L_SetOffset(int16_t *Mag, __packed float *MagAngle); //做简单的校正
 
 #endif

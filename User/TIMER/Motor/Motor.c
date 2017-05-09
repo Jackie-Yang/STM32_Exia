@@ -78,7 +78,6 @@ void set_motorPWM(u8 motor, u16 motorPWM)
     default:
         break;
     }
-    stQuadrotor_State_DMA_BUFF = stQuadrotor_State;
     //TIM_ARRPreloadConfig(TIM2,ENABLE);
     TIM_CtrlPWMOutputs(TIM2, ENABLE);
 }

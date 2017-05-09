@@ -102,7 +102,7 @@ void USART1_IRQHandler()
 		{
 			case COMMAND_MPU6050_SETOFFSET:
 			{
-				// MPU6050_SetOffset();
+				// MPU6050_SetOffset(stQuadrotor_State.s16_Accel, stQuadrotor_State.s16_Gyro);
 				// init_quaternion();
 				MPU6050_DMP_SelfTest();
 				break;
@@ -120,7 +120,7 @@ void USART1_IRQHandler()
 			}
 			case COMMAND_HMC5883L_SETOFFSET:
 			{
-				HMC5883L_SetOffset( );
+				HMC5883L_SetOffset(stQuadrotor_State.s16_HMC5883L, &stQuadrotor_State.f_HMC5883L_Angle);
 				break;
 			}
 			case COMMAND_SET_THRO:
@@ -509,56 +509,56 @@ void USART1_IRQHandler()
 			//检查MPU6050校正数据
 			case 25:
 			{
-				stQuadrotor_State.u16_Check_Data = Accel_offset_X;
+				stQuadrotor_State.u16_Check_Data = Accel_offset[0];
 				stQuadrotor_State.u16_Check_State = ReceiveOrder;
 				break;
 			}
 			case 26:
 			{
-				stQuadrotor_State.u16_Check_Data = Accel_offset_Y;
+				stQuadrotor_State.u16_Check_Data = Accel_offset[1];
 				stQuadrotor_State.u16_Check_State = ReceiveOrder;
 				break;
 			}
 			case 27:
 			{
-				stQuadrotor_State.u16_Check_Data = Accel_offset_Z;
+				stQuadrotor_State.u16_Check_Data = Accel_offset[2];
 				stQuadrotor_State.u16_Check_State = ReceiveOrder;
 				break;
 			}
 			case 28:
 			{
-				stQuadrotor_State.u16_Check_Data = Gyro_offset_X;
+				stQuadrotor_State.u16_Check_Data = Gyro_offset[0];
 				stQuadrotor_State.u16_Check_State = ReceiveOrder;
 				break;
 			}
 			case 29:
 			{
-				stQuadrotor_State.u16_Check_Data = Gyro_offset_Y;
+				stQuadrotor_State.u16_Check_Data = Gyro_offset[1];
 				stQuadrotor_State.u16_Check_State = ReceiveOrder;
 				break;
 			}
 			case 30:
 			{
-				stQuadrotor_State.u16_Check_Data = Gyro_offset_Z;
+				stQuadrotor_State.u16_Check_Data = Gyro_offset[2];
 				stQuadrotor_State.u16_Check_State = ReceiveOrder;
 				break;
 			}
 			//检查HMC5883L校正数据
 			case 31:
 			{
-				stQuadrotor_State.u16_Check_Data = HMC5883L_X_offset;
+				stQuadrotor_State.u16_Check_Data = Mag_Offset[0];
 				stQuadrotor_State.u16_Check_State = ReceiveOrder;
 				break;
 			}
 			case 32:
 			{
-				stQuadrotor_State.u16_Check_Data = HMC5883L_Y_offset;
+				stQuadrotor_State.u16_Check_Data = Mag_Offset[1];
 				stQuadrotor_State.u16_Check_State = ReceiveOrder;
 				break;
 			}
 			case 33:
 			{
-				stQuadrotor_State.u16_Check_Data = HMC5883L_Z_offset;
+				stQuadrotor_State.u16_Check_Data = Mag_Offset[2];
 				stQuadrotor_State.u16_Check_State = ReceiveOrder;
 				break;
 			}
@@ -662,7 +662,6 @@ void USART1_IRQHandler()
 			default:break;
 		}
 		
-		stQuadrotor_State_DMA_BUFF = stQuadrotor_State;
 	}  
 }
 

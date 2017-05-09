@@ -115,7 +115,6 @@ void PID_init(void)
 //	DMA_Buff_In_16(read_temp,YAW_GYRO_KD_INDEX);
 	stQuadrotor_State.u16_YAW_G_Kd = read_temp;
 	Yaw.Gyro_Kd = ((float)read_temp) / 100.0;
-	stQuadrotor_State_DMA_BUFF = stQuadrotor_State;
 }
 
 

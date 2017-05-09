@@ -206,7 +206,6 @@ void MS5611_GetPressure(void)
 		stQuadrotor_State.s32_MS5611_HIGH = (int32_t)MS5611_high;
 		//High.high_cur = MS5611_high / 100.0f;
 	}
-	stQuadrotor_State_DMA_BUFF = stQuadrotor_State;
 
 }
 
