@@ -138,9 +138,9 @@ void StartBlink(pLED_BlinkMode pBlinkMode)
                 {
                     pPreNode->Next = pNode->Next;
                 }
-                else //该节点是首结点
+                else //该节点已经是首结点
                 {
-                    pBlinkStack = pNode->Next;
+                    return;
                 }
                 break;
             }
@@ -155,9 +155,9 @@ void StartBlink(pLED_BlinkMode pBlinkMode)
             {
                 return;
             }
+            pNode->pBlinkMode = pBlinkMode;
         }
-        
-        pNode->pBlinkMode = pBlinkMode;
+        //将新的闪烁模式插入到栈顶
         pNode->Next = pBlinkStack;
         pBlinkStack = pNode;
     }

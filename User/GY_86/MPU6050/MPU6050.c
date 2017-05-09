@@ -18,7 +18,7 @@ int16_t Gyro_offset_X = 0,Gyro_offset_Y = 0,Gyro_offset_Z = 0;
 int16_t MPU6050_Accel_X = 0,MPU6050_Accel_Y = 0,MPU6050_Accel_Z = 0;
 int16_t Accel_offset_X = 0,Accel_offset_Y = 0,Accel_offset_Z = 0;
 
-float MPU6050_Temperature = 0;
+int16_t MPU6050_Temperature = 0;
 
 static signed char gyro_orientation[9] = {-1, 0, 0,
 										  0, -1, 0,
