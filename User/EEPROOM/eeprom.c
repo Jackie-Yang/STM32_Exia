@@ -34,15 +34,6 @@ uint16_t DataVar = 0;
 
 /* Virtual address defined by the user: 0xFFFF value is prohibited */
 uint16_t VirtAddVarTab[NumbOfVar] = {
-    OFFSET_AX_ADDR,
-    OFFSET_AY_ADDR,
-    OFFSET_AZ_ADDR,
-    OFFSET_GX_ADDR,
-    OFFSET_GY_ADDR,
-    OFFSET_GZ_ADDR,
-    HMC5883L_OFFSET_X_ADDR,
-    HMC5883L_OFFSET_Y_ADDR,
-    HMC5883L_OFFSET_Z_ADDR,
     ROLL_GYRO_KP_ADDR,
     ROLL_GYRO_KI_ADDR,
     ROLL_GYRO_KD_ADDR,

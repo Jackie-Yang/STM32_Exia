@@ -70,7 +70,6 @@ enum
 {
 	COMMAND_MPU6050_SETOFFSET = 0, //MPU6050设置校正，初始化四元数（非DMP下使用）
 	COMMAND_SET_HIGH_REF,		   //设置参考高度
-	COMMAND_HMC5883L_SETOFFSET,	//HMC5883L设置校正
 	COMMAND_SET_THRO,			   //设置油门
 	COMMAND_SET_RUDD,			   //设置方向舵
 	COMMAND_SET_ELEV,			   //设置升降舵

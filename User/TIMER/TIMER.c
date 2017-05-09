@@ -40,12 +40,12 @@ void TIM4_IRQHandler(void)   //TIM4中断进行参数更新
 	{
 		TIM_ClearITPendingBit(TIM4, TIM_IT_Update);  //清除TIM4更新中断标志
 
-		AHRSupdate(	stQuadrotor_State.s16_Accel, 
-					stQuadrotor_State.s16_Gyro, 
-					stQuadrotor_State.s16_HMC5883L, 
-					&stQuadrotor_State.f_HMC5883L_Angle); //10ms一次姿态更新
-					
-		// Read_MPU6050_DMP();
+		// AHRSupdate(	stQuadrotor_State.s16_Accel, 
+		// 			stQuadrotor_State.s16_Gyro, 
+		// 			stQuadrotor_State.s16_HMC5883L, 
+		// 			&stQuadrotor_State.f_HMC5883L_Angle); //10ms一次姿态更新
+
+		Read_MPU6050_DMP(stQuadrotor_State.s16_Accel, stQuadrotor_State.s16_Gyro);
 
 		Roll_Set = 50.0 * (stQuadrotor_State.u16_Aile - 1100.0) / 800.0 - 25.0;
 		Pitch_Set = -(50.0 * (stQuadrotor_State.u16_Elev - 1100.0) / 800.0 - 25.0);

@@ -2,7 +2,6 @@
 #include "inv_mpu.h"
 #include "inv_mpu_dmp_motion_driver.h"
 #include "Setup.h"
-#include "eeprom.h"
 #include "USART.h"
 #include "I2C.h"
 #include "delay.h"
@@ -45,12 +44,7 @@ void MPU6050_Init(void)
 	I2C_SendByte(MPU6050_Addr,ACCEL_CONFIG, 0x01); //加速计自检测量范围及高通滤波频率0x1C，0x01(不自检，2G，5Hz)
 
 	 //从Flash读取之前的校正数据
-	EE_ReadVariable(OFFSET_AX_ADDR, (uint16_t*)&Accel_offset[0]);
-	EE_ReadVariable(OFFSET_AY_ADDR, (uint16_t*)&Accel_offset[1]);
-	EE_ReadVariable(OFFSET_AZ_ADDR, (uint16_t*)&Accel_offset[2]);
-	EE_ReadVariable(OFFSET_GX_ADDR, (uint16_t*)&Gyro_offset[0]);
-	EE_ReadVariable(OFFSET_GY_ADDR, (uint16_t*)&Gyro_offset[1]);
-	EE_ReadVariable(OFFSET_GZ_ADDR, (uint16_t*)&Gyro_offset[2]);
+
 	//将校正数据发送到上位机
 //	DMA_Buff_In_16(Accel_offset_X,ACCEL_OFFSET_X_INDEX);
 //	DMA_Buff_In_16(Accel_offset_Y,ACCEL_OFFSET_Y_INDEX);
@@ -182,13 +176,6 @@ void MPU6050_SetOffset(int16_t *Accel, int16_t *Gyro)
 	 Gyro_offset[0] = -(Sum_Gx / SETOFFSET_TIMES);
 	 Gyro_offset[1] = -(Sum_Gy / SETOFFSET_TIMES);
 	 Gyro_offset[2] = -(Sum_Gz / SETOFFSET_TIMES);
-
-	 EE_WriteVariable(OFFSET_AX_ADDR, Accel_offset[0]); //将偏移量储存进Flash，方便下次开机读取
-	 EE_WriteVariable(OFFSET_AY_ADDR, Accel_offset[1]);
-	 EE_WriteVariable(OFFSET_AZ_ADDR, Accel_offset[2]);
-	 EE_WriteVariable(OFFSET_GX_ADDR, Gyro_offset[0]);
-	 EE_WriteVariable(OFFSET_GY_ADDR, Gyro_offset[1]);
-	 EE_WriteVariable(OFFSET_GZ_ADDR, Gyro_offset[2]);
 }
 
 void READ_MPU6050_TEMP(__packed int16_t *pTemp)

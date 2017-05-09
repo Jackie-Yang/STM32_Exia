@@ -26,38 +26,34 @@
 /* Includes ------------------------------------------------------------------*/
 #include "stm32f10x.h"
 
-//Flash虚拟地址宏定义
-#define OFFSET_AX_ADDR 0x0000
-#define OFFSET_AY_ADDR 0x0001
-#define OFFSET_AZ_ADDR 0x0002
-#define OFFSET_GX_ADDR 0x0003
-#define OFFSET_GY_ADDR 0x0004
-#define OFFSET_GZ_ADDR 0x0005
+//Flash虚拟地址枚举，比宏定义方便
+enum
+{
+  ROLL_GYRO_KP_ADDR = 0x0000,
+  ROLL_GYRO_KI_ADDR,
+  ROLL_GYRO_KD_ADDR,
+  ROLL_ANGLE_KP_ADDR,
+  ROLL_ANGLE_KI_ADDR,
+  ROLL_ANGLE_KD_ADDR,
 
-#define HMC5883L_OFFSET_X_ADDR 0x0006
-#define HMC5883L_OFFSET_Y_ADDR 0x0007
-#define HMC5883L_OFFSET_Z_ADDR 0x0008
+  PITCH_GYRO_KP_ADDR,
+  PITCH_GYRO_KI_ADDR,
+  PITCH_GYRO_KD_ADDR,
+  PITCH_ANGLE_KP_ADDR,
+  PITCH_ANGLE_KI_ADDR,
+  PITCH_ANGLE_KD_ADDR,
 
-#define ROLL_GYRO_KP_ADDR 0x0009
-#define ROLL_GYRO_KI_ADDR 0x000a
-#define ROLL_GYRO_KD_ADDR 0x000b
-#define ROLL_ANGLE_KP_ADDR 0x000c
-#define ROLL_ANGLE_KI_ADDR 0x000d
-#define ROLL_ANGLE_KD_ADDR 0x000e
+  YAW_GYRO_KP_ADDR,
+  YAW_GYRO_KI_ADDR,
+  YAW_GYRO_KD_ADDR,
+  NumbOfVar
+};
 
-#define PITCH_GYRO_KP_ADDR 0x000f
-#define PITCH_GYRO_KI_ADDR 0x0010
-#define PITCH_GYRO_KD_ADDR 0x0011
-#define PITCH_ANGLE_KP_ADDR 0x0012
-#define PITCH_ANGLE_KI_ADDR 0x0013
-#define PITCH_ANGLE_KD_ADDR 0x0014
 
-#define YAW_GYRO_KP_ADDR 0x0015
-#define YAW_GYRO_KI_ADDR 0x0016
-#define YAW_GYRO_KD_ADDR 0x0017
+
 
 /* Variables' number */
-#define NumbOfVar ((uint8_t)0x18)
+// #define NumbOfVar ((uint8_t)0x18)
 
 /* Exported constants --------------------------------------------------------*/
 /* Define the STM32F10Xxx Flash page size depending on the used STM32 device */
@@ -97,11 +93,11 @@
 /* Page full define */
 #define PAGE_FULL ((uint8_t)0x80)
 
-
 /* Exported types ------------------------------------------------------------*/
 /* Exported macro ------------------------------------------------------------*/
 /* Exported functions ------------------------------------------------------- */
-uint16_t EE_Init(void);
+uint16_t
+EE_Init(void);
 uint16_t EE_ReadVariable(uint16_t VirtAddress, uint16_t *Data);
 uint16_t EE_WriteVariable(uint16_t VirtAddress, uint16_t Data);
 

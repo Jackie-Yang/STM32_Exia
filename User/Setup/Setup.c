@@ -19,8 +19,9 @@
 Quadrotor_State stQuadrotor_State = {0};
 
 /********************系统初始化,所有模块初始化函数的集合****************************/
-void init(void)
+int8_t init(void)
 {
+	int8_t ret = 0;
 	RCC_Configuration( );
 	delay_ms(500);				//上电先延时一小段时间，否则mpu6050会初始化失败
 
@@ -45,15 +46,15 @@ void init(void)
 	LED_Blink_Init();   //定时器1，LED闪烁
 	StartBlink(Blink_Init); //LED闪烁：初始化
 
-	MPU6050_Init(); //初始化MPU6050
+	// MPU6050_Init(); //初始化MPU6050
 	// MPU6050_SetOffset(stQuadrotor_State.s16_Accel, stQuadrotor_State.s16_Gyro); //可将开机时状态设置为水平（非DMP下）
-	// MPU6050_DMP_Init(); //初始化MPU6050(DMP方式)
-	HMC5883L_Init();
+	MPU6050_DMP_Init(); //初始化MPU6050(DMP方式)
+	ret |= HMC5883L_Init();
 	MS5611_Init();
 
-	init_quaternion(stQuadrotor_State.s16_Accel,
-					stQuadrotor_State.s16_HMC5883L,
-					&stQuadrotor_State.f_HMC5883L_Angle); //初始化四元数(非DMP下使用)
+	// init_quaternion(stQuadrotor_State.s16_Accel,
+	// 				stQuadrotor_State.s16_HMC5883L,
+	// 				&stQuadrotor_State.f_HMC5883L_Angle); //初始化四元数(非DMP下使用)
 	PID_init( );		   		//初始化PID参数，从flash读取
 
 	KS10X_init( );    //初始化超声波传感器
@@ -66,6 +67,8 @@ void init(void)
 	UpdateTimer_Init(); //初始化定时器4，开始参数更新
 
 	StopBlink(Blink_Init);  //初始化完毕LED闪烁停止
+
+	return ret;
 }
 
 

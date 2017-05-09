@@ -2,142 +2,155 @@
 #include "math.h"
 #include "I2C.h"
 #include "delay.h"
-#include "eeprom.h"
 
-/************************************************************   
-* 函数名:Read_HMC5883L   
-* 描述 : 读取磁场强度 
-* 输入  :无   
-* 输出  :无    
-*/
+float x_max = 0, x_min = 0, y_max = 0, y_min = 0, z_max = 0, z_min = 0;
+float Mag_Offset[3] = {0};
+float Mag_Gain[3] = {0};
+float Scale[3] = {0};
 
-int16_t Mag_Offset[3] = {0};
-
-void HMC5883L_Init(void)
+//模块初始化，给传感器增加一个偏置电流，获取比例因数进行校正，获取第一次磁场的最大最小值
+int8_t HMC5883L_Init(void)
 {
-	//	I2C_SendByte(HMC5883L_Addr,HMC5883L_ConfigurationRegisterA,0x14);   //配置寄存器A：采样平均数1 输出速率30Hz 正常测量
-	//	I2C_SendByte(HMC5883L_Addr,HMC5883L_ConfigurationRegisterB,0x20);   //配置寄存器B：增益控制
-	//	I2C_SendByte(HMC5883L_Addr,HMC5883L_ModeRegister,0x00);   //模式寄存器：连续测量模式
-
-	EE_ReadVariable(HMC5883L_OFFSET_X_ADDR, (uint16_t *)&Mag_Offset[0]);
-	EE_ReadVariable(HMC5883L_OFFSET_Y_ADDR, (uint16_t *)&Mag_Offset[1]);
-	EE_ReadVariable(HMC5883L_OFFSET_Z_ADDR, (uint16_t *)&Mag_Offset[2]);
-
-	//	DMA_Buff_In_16(HMC5883L_X_offset,27);
-	//	DMA_Buff_In_16(HMC5883L_Y_offset,28);
-	//	DMA_Buff_In_16(HMC5883L_Z_offset,29);
-}
-
-void Read_HMC5883L(int16_t *Mag, __packed float *MagAngle) //读取
-{
+	int8_t ret;
+	float Mag[3];
 	uint8_t Buff[6] = {0};
-	float Angle;
 
-	I2C_SendByte(HMC5883L_Addr,HMC5883L_ConfigurationRegisterA,0x14);   //配置寄存器A：采样平均数1 输出速率30Hz 正常测量
-	I2C_SendByte(HMC5883L_Addr,HMC5883L_ConfigurationRegisterB,0x20);   //配置寄存器B：增益控制
-	I2C_SendByte(HMC5883L_Addr,HMC5883L_ModeRegister,0x00);   //模式寄存器：连续测量模式
+	//配置寄存器A：采样平均数1 输出速率30Hz 施加正向偏置电流进行自测
+	ret |= I2C_SendByte(HMC5883L_Addr, HMC5883L_ConfigA, CONFIGA_AVERAGE_1 | CONFIGA_RATE_30 | CONFIGA_BIAS_POSITIVE);
+	//配置寄存器B：增益控制 1090LSB/ga
+	ret |= I2C_SendByte(HMC5883L_Addr, HMC5883L_ConfigB, CONFIGB_GAIN_1090);
+	ret |= I2C_SendByte(HMC5883L_Addr, HMC5883L_Mode, MODE_SINGLE); //模式寄存器：单次测量模式
+	delay_ms(250);		//添加偏置电流进行自测过程需要一段延时
+	ret |= I2C_ReadBytes_LE(HMC5883L_Addr, HMC5883L_Output_X_MSB, 6, Buff); //获取测量结果
+	Mag[0] = (Buff[0] << 8) | Buff[1];
+	Mag[2] = (Buff[2] << 8) | Buff[3];
+	Mag[1] = (Buff[4] << 8) | Buff[5];
 
-	I2C_ReadBytes_LE(HMC5883L_Addr, HMC5883L_Output_X_MSB, 6, Buff);
-	Mag[0] = ((Buff[0] << 8) | Buff[1]) - Mag_Offset[0];
-	Mag[2] = ((Buff[2] << 8) | Buff[3]) - Mag_Offset[2];
-	Mag[1] = ((Buff[4] << 8) | Buff[5]) - Mag_Offset[1];
+	//偏置电流会在X、Y方向上产生1.16ga的磁场，Z方向上为1.08ga
+	//使用测量值与理论值进行比较得到比例因数
+	Scale[0] = 1.16 * 1090.0 / Mag[0];		
+	Scale[1] = 1.16 * 1090.0 / Mag[1];
+	Scale[2] = 1.08 * 1090.0 / Mag[2];
+	if (Scale[0] > 1.2 || Scale[0] < 0.8 || Scale[1] > 1.2 || Scale[1] < 0.8 || Scale[2] > 1.2 || Scale[2] < 0.8)
+	{
+		ret = -1;	//误差过大
+	}
 
-	//	Magn_x=Magn_x-X_Offset;
-	//	Magn_y=Magn_y-Y_Offset;
-	//	Magn_z=Magn_z-Z_Offset;
-	// Magn_x=Magn_x;
-	//	Magn_y=Magn_y;
-	//Magn_y=(Magn_y*HMC5883L_GAIN_Y)/10000;
-
-//磁场的值很小一般不会溢出
-	// if (Mag[0] > 0x7fff)
-	// 	Mag[0] -= 0xffff;
-	// if (Mag[1] > 0x7fff)
-	// 	Mag[1] -= 0xffff;
-	// if (Mag[2] > 0x7fff)
-	// 	Mag[2] -= 0xffff;
-	Angle = (float)atan2f((float)Mag[1], (float)Mag[0]) * (180 / 3.14159265) + 180; // angle in degrees
-	Angle += 100;
-	if (Angle > 360)
-		Angle -= 360;
-	*MagAngle = Angle;
-}
-
-void HMC5883L_SetOffset(int16_t *Mag, __packed float *MagAngle)
-{
-	int i;
-	int16_t x_max,x_min,y_max,y_min,z_max,z_min;
-
-	Mag_Offset[0] = 0;
-	Mag_Offset[1] = 0;
-	Mag_Offset[2] = 0;
-
-	//	DMA_Buff_In_16(HMC5883L_X_offset,27);
-	//	DMA_Buff_In_16(HMC5883L_Y_offset,28);
-	//	DMA_Buff_In_16(HMC5883L_Z_offset,29);
-
-	Read_HMC5883L(Mag, MagAngle);
+	//配置寄存器A：采样平均数1 输出速率75Hz 正常测量
+	ret |= I2C_SendByte(HMC5883L_Addr, HMC5883L_ConfigA, CONFIGA_AVERAGE_1 | CONFIGA_RATE_75 | CONFIGA_BIAS_NORMAL);
+	//配置寄存器B：增益控制 1090LSB/ga
+	ret |= I2C_SendByte(HMC5883L_Addr, HMC5883L_ConfigB, CONFIGB_GAIN_1090);
+	ret |= I2C_SendByte(HMC5883L_Addr, HMC5883L_Mode, MODE_CONTINUOUS); //模式寄存器：连续测量模式
+	//读取第一组数据作为最大最小值的基准
+	delay_ms(250);													 //添加偏置电流进行自测过程需要一段延时
+	ret |= I2C_ReadBytes_LE(HMC5883L_Addr, HMC5883L_Output_X_MSB, 6, Buff); //获取测量结果
+	Mag[0] = (int16_t)((Buff[0] << 8) | Buff[1]) * Scale[0];
+	Mag[2] = (int16_t)((Buff[2] << 8) | Buff[3]) * Scale[2];
+	Mag[1] = (int16_t)((Buff[4] << 8) | Buff[5]) * Scale[1];
 	x_max = Mag[0];
 	x_min = Mag[0];
 	y_max = Mag[1];
 	y_min = Mag[1];
 	z_max = Mag[2];
 	z_min = Mag[2];
-
-	for(i = 0;i < 2000;i++)
-	{
-		Read_HMC5883L(Mag, MagAngle);
-		if(Mag[0] > x_max )		
-		{
-			x_max = Mag[0];
-			i = 0;
-		}
-		else if(Mag[0] < x_min )		
-		{
-			x_min = Mag[0];
-			i = 0;
-		}
-		if(Mag[1] > y_max ) 
-		{
-			y_max = Mag[1];
-			i = 0;
-		}
-		else if(Mag[1] < y_min ) 	
-		{
-			y_min = Mag[1];
-			i = 0;
-		}
-		if(Mag[2] > z_max ) 	
-		{
-			z_max = Mag[2];
-			i = 0;
-		}
-		else if(Mag[2] < z_min ) 	
-		{
-			z_min = Mag[2];
-			i = 0;
-		}
-		delay_ms(2);
-	}
-	Mag_Offset[0] = (x_max + x_min) / 2;
-	Mag_Offset[1] = (y_max + y_min) / 2;
-	Mag_Offset[2] = (z_max + z_min) / 2;
-
-	EE_WriteVariable(HMC5883L_OFFSET_X_ADDR, Mag_Offset[0]); //将偏移量储存进Flash，方便下次开机读取
-	EE_WriteVariable(HMC5883L_OFFSET_Y_ADDR, Mag_Offset[1]);
-	EE_WriteVariable(HMC5883L_OFFSET_Z_ADDR, Mag_Offset[2]);
-
-	//准备传送校正数据
-
-	// DMA_Buff_In_16(0,CHECK_STATE_INDEX);
-	// DMA_Buff_In_16(HMC5883L_X_offset,CHECK_DATA_INDEX);
-	// DMA_Buff_In_16(25,CHECK_STATE_INDEX);
-
-//	DMA_Buff_In_16(HMC5883L_X_offset,27);	
-//	DMA_Buff_In_16(HMC5883L_Y_offset,28);	
-//	DMA_Buff_In_16(HMC5883L_Z_offset,29);
-
+	Mag_Offset[0] = (float)(x_max + x_min) / 2.0;
+	Mag_Offset[1] = (float)(y_max + y_min) / 2.0;
+	Mag_Offset[2] = (float)(z_max + z_min) / 2.0;
+	Mag_Gain[0] = 1;
+	Mag_Gain[1] = (float)(x_max - x_min) / (float)(y_max - y_min);
+	Mag_Gain[2] = (float)(x_max - x_min) / (float)(z_max - z_min);
+	return ret;
 }
 
+//如果有Roll，Pitch，可以进行修正，否则输入0
+void Read_HMC5883L(int16_t *Mag, __packed float *MagAngle) //读取
+{
+	uint8_t Buff[6] = {0};
+	float X_Heading, Y_Heading, Angle;
+	float MagRaw[3] = {0};
+	uint8_t bUpdateGain = 0;
 
+	I2C_ReadBytes_LE(HMC5883L_Addr, HMC5883L_Output_X_MSB, 6, Buff);
+	//读取值乘比例因子
+	MagRaw[0] = (int16_t)((Buff[0] << 8) | Buff[1]) * Scale[0];
+	MagRaw[2] = (int16_t)((Buff[2] << 8) | Buff[3]) * Scale[2];
+	MagRaw[1] = (int16_t)((Buff[4] << 8) | Buff[5]) * Scale[1];
+
+//更新校准数据
+	if (MagRaw[0] > x_max)
+	{
+		x_max = MagRaw[0];
+		Mag_Offset[0] = (float)(x_max + x_min) / 2;
+		bUpdateGain = 1;
+	}
+	else if (MagRaw[0] < x_min)
+	{
+		x_min = MagRaw[0];
+		Mag_Offset[0] = (float)(x_max + x_min) / 2;
+		bUpdateGain = 1;
+	}
+	if (MagRaw[1] > y_max)
+	{
+		y_max = MagRaw[1];
+		Mag_Offset[1] = (float)(y_max + y_min) / 2;
+		bUpdateGain = 1;
+	}
+	else if (MagRaw[1] < y_min)
+	{
+		y_min = MagRaw[1];
+		Mag_Offset[1] = (float)(y_max + y_min) / 2;
+		bUpdateGain = 1;
+	}
+	if (MagRaw[2] > z_max)
+	{
+		z_max = MagRaw[2];
+		Mag_Offset[2] = (float)(z_max + z_min) / 2;
+		bUpdateGain = 1;
+	}
+	else if (MagRaw[2] < z_min)
+	{
+		z_min = MagRaw[2];
+		Mag_Offset[2] = (float)(z_max + z_min) / 2;
+		bUpdateGain = 1;
+	}
+
+	if (bUpdateGain)
+	{
+		Mag_Gain[1] = (float)(x_max - x_min) / (float)(y_max - y_min);
+		Mag_Gain[2] = (float)(x_max - x_min) / (float)(z_max - z_min);
+	}
+
+	X_Heading = MagRaw[0] - Mag_Offset[0];
+	Y_Heading = Mag_Gain[1] * (MagRaw[1] - Mag_Offset[1]);
+
+	Mag[0] = X_Heading;
+	Mag[1] = Y_Heading;
+	Mag[2] = Mag_Gain[2] * (MagRaw[2] - Mag_Offset[2]);
+
+	
+
+	//磁场的值很小一般不会溢出
+	// if (Mag[0] > 0x7fff)
+	// 	Mag[0] -= 0xffff;
+	// if (Mag[1] > 0x7fff)
+	// 	Mag[1] -= 0xffff;
+	// if (Mag[2] > 0x7fff)
+	// 	Mag[2] -= 0xffff;
+	// X_Heading = X_Heading * cos(Pitch) + Mag[1] * sin(Roll) * sin(Pitch) - Mag[2] * cos(Roll) * sin(Pitch);
+	// Y_Heading = Y_Heading * cos(Roll) + Mag[2] * sin(Roll);
+	Angle = atan2f(Y_Heading, X_Heading) * (180 / 3.14159265) + 180; // angle in degrees
+	Angle += 91.09;	//忘了初期加这个的原因，传感器的角度与飞控差90度？1.09是广州的磁偏角
+	if (Angle > 360)
+		Angle -= 360;
+	*MagAngle = Angle;
+}
+
+// uint8_t A, B, Mode, State;
+// void Check()	//检查寄存器
+// {
+// 	I2C_ReadByte(HMC5883L_Addr, HMC5883L_ConfigA, &A);
+// 	I2C_ReadByte(HMC5883L_Addr, HMC5883L_ConfigB, &B);
+// 	I2C_ReadByte(HMC5883L_Addr, HMC5883L_Mode, &Mode);
+// 	I2C_ReadByte(HMC5883L_Addr, HMC5883L_STATE, &State);
+// }
 

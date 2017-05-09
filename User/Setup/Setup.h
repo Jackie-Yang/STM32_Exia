@@ -8,7 +8,7 @@
 //飞行器数据
 extern Quadrotor_State stQuadrotor_State;
 
-void init(void);				   //系统初始化,所有模块初始化函数的集合
+int8_t init(void);                 //系统初始化,所有模块初始化函数的集合
 void RCC_Configuration(void);	   //系统、外设时钟配置
 void GPIO_Configuration(void);	   //GPIO配置
 void NVIC_Configuration(void);	   //中断向量配置
