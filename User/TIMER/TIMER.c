@@ -40,12 +40,27 @@ void TIM4_IRQHandler(void)   //TIM4中断进行参数更新
 	{
 		TIM_ClearITPendingBit(TIM4, TIM_IT_Update);  //清除TIM4更新中断标志
 
-		// AHRSupdate(	stQuadrotor_State.s16_Accel, 
-		// 			stQuadrotor_State.s16_Gyro, 
-		// 			stQuadrotor_State.s16_HMC5883L, 
+		GetAttitude(stQuadrotor_State.s16_Accel,
+					stQuadrotor_State.s16_Gyro,
+					stQuadrotor_State.s16_HMC5883L,
+					&stQuadrotor_State.f_HMC5883L_Angle,
+					&stQuadrotor_State.f_Roll,
+					&stQuadrotor_State.f_Pitch,
+					&stQuadrotor_State.f_Yaw);
+
+		Pitch.Gyro_cur = (float)stQuadrotor_State.s16_Gyro[0] / 16.4;
+		Roll.Gyro_cur = (float)stQuadrotor_State.s16_Gyro[1] / 16.4;
+		Yaw.Gyro_cur = (float)stQuadrotor_State.s16_Gyro[2] / 16.4;
+
+		Yaw.angle_cur = stQuadrotor_State.f_Yaw;
+		Pitch.angle_cur = stQuadrotor_State.f_Pitch;
+		Roll.angle_cur = stQuadrotor_State.f_Roll;
+		// AHRSupdate(	stQuadrotor_State.s16_Accel,
+		// 			stQuadrotor_State.s16_Gyro,
+		// 			stQuadrotor_State.s16_HMC5883L,
 		// 			&stQuadrotor_State.f_HMC5883L_Angle); //10ms一次姿态更新
 
-		Read_MPU6050_DMP(stQuadrotor_State.s16_Accel, stQuadrotor_State.s16_Gyro);
+		// Read_MPU6050_DMP(stQuadrotor_State.s16_Accel, stQuadrotor_State.s16_Gyro);
 
 		Roll_Set = 50.0 * (stQuadrotor_State.u16_Aile - 1100.0) / 800.0 - 25.0;
 		Pitch_Set = -(50.0 * (stQuadrotor_State.u16_Elev - 1100.0) / 800.0 - 25.0);
@@ -95,12 +110,12 @@ void TIM4_IRQHandler(void)   //TIM4中断进行参数更新
 				}
 				case 4:
 				{
-					READ_MPU6050_TEMP(&stQuadrotor_State.s16_MPU6050_Temp); //读取MPU6050温度
+					READ_MPU6050_TEMP(&stQuadrotor_State.f_MPU6050_Temp); //读取MPU6050温度
 					break;
 				}
 				case 5:
 				{
-					Read_HMC5883L(stQuadrotor_State.s16_HMC5883L, &stQuadrotor_State.f_HMC5883L_Angle); //获取地磁数据（该阶段暂时没有融合地磁数据）
+					// Read_HMC5883L(stQuadrotor_State.s16_HMC5883L, &stQuadrotor_State.f_HMC5883L_Angle); //获取地磁数据（该阶段暂时没有融合地磁数据）
 					TIM4_state = 0;
 				}
 				default:

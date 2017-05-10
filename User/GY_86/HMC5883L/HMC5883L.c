@@ -11,7 +11,7 @@ float Scale[3] = {0};
 //模块初始化，给传感器增加一个偏置电流，获取比例因数进行校正，获取第一次磁场的最大最小值
 int8_t HMC5883L_Init(void)
 {
-	int8_t ret;
+	int8_t ret = 0;
 	float Mag[3];
 	uint8_t Buff[6] = {0};
 
@@ -62,15 +62,19 @@ int8_t HMC5883L_Init(void)
 	return ret;
 }
 
-//如果有Roll，Pitch，可以进行修正，否则输入0
-void Read_HMC5883L(int16_t *Mag, __packed float *MagAngle) //读取
+int8_t Read_HMC5883L(int16_t *Mag, __packed float *MagAngle) //读取
 {
+	int8_t ret = 0;
 	uint8_t Buff[6] = {0};
 	float X_Heading, Y_Heading, Angle;
 	float MagRaw[3] = {0};
 	uint8_t bUpdateGain = 0;
 
-	I2C_ReadBytes_LE(HMC5883L_Addr, HMC5883L_Output_X_MSB, 6, Buff);
+	ret |= I2C_ReadBytes_LE(HMC5883L_Addr, HMC5883L_Output_X_MSB, 6, Buff);
+	if(ret)
+	{
+		return ret;
+	}
 	//读取值乘比例因子
 	MagRaw[0] = (int16_t)((Buff[0] << 8) | Buff[1]) * Scale[0];
 	MagRaw[2] = (int16_t)((Buff[2] << 8) | Buff[3]) * Scale[2];
@@ -143,6 +147,7 @@ void Read_HMC5883L(int16_t *Mag, __packed float *MagAngle) //读取
 	if (Angle > 360)
 		Angle -= 360;
 	*MagAngle = Angle;
+	return 0;
 }
 
 // uint8_t A, B, Mode, State;

@@ -3,6 +3,8 @@
 
 #include "stm32f10x.h"
 
+#define DMP_ENABLE		1
+
 /**********************宏定义*************************/
 
 #define	MPU6050_Addr   0xD0	  //定义器件在IIC总线中的从地址(已经左移一位)  
@@ -36,21 +38,20 @@
 #define	PWR_MGMT_1		107		//电源管理0x6B，典型值：0x00(正常启用)
 #define	WHO_AM_I		117		//I2C地址寄存器0x75(默认数值0x68，只读)
 
-extern int16_t Gyro_offset[];
-extern int16_t Accel_offset[];
 
+int8_t MPU6050_Init(void); 			//MPU6050初始化配置参数
 
-void MPU6050_Init(void); 			//MPU6050初始化配置参数
-void MPU6050_WHO_AM_I(void);		//获取MPU6050识别码检测(即I2C地址)
+#if DMP_ENABLE
+int8_t MPU6050_DMP_SelfTest(void);
+int8_t Read_MPU6050_DMP(int16_t *Accel, int16_t *Gyro, __packed float *Roll, __packed float *Pitch, __packed float *Yaw);
+#else
+int8_t READ_MPU6050_Accel(int16_t *Accel); //读取加速度传感器数据
+int8_t READ_MPU6050_Gyro(int16_t *Gyro);   //读取陀螺仪数据
+void MPU6050_SetOffset(void);				   //对传感器进行零偏校正
+#endif
 
-void READ_MPU6050_Accel(int16_t *Accel); //读取加速度传感器数据
-void READ_MPU6050_Gyro(int16_t *Gyro);  //读取陀螺仪数据
-void MPU6050_SetOffset(int16_t *Accel, int16_t *Gyro); //对传感器进行零偏校正
-void READ_MPU6050_TEMP(__packed int16_t *pTemp);	   //读取传感器温度
-
-void MPU6050_DMP_Init(void);
-void MPU6050_DMP_SelfTest(void);
-void Read_MPU6050_DMP(int16_t *Accel, int16_t *Gyro);
+int8_t READ_MPU6050_TEMP(__packed float *pTemp); //读取传感器温度
+void MPU6050_WHO_AM_I(void); //获取MPU6050识别码检测(即I2C地址)
 
 #endif
 

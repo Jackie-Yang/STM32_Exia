@@ -104,7 +104,11 @@ void USART1_IRQHandler()
 			{
 				// MPU6050_SetOffset(stQuadrotor_State.s16_Accel, stQuadrotor_State.s16_Gyro);
 				// init_quaternion();
+				#if DMP_ENABLE
 				MPU6050_DMP_SelfTest();
+				#else
+				MPU6050_SetOffset();
+				#endif
 				break;
 			}
 			case COMMAND_SET_HIGH_REF:

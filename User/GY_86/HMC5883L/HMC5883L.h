@@ -57,6 +57,6 @@
 
 
 int8_t HMC5883L_Init(void);			//模块初始化，配置相关寄存器
-void Read_HMC5883L(int16_t *Mag, __packed float *MagAngle); //读取磁场数据
+int8_t Read_HMC5883L(int16_t *Mag, __packed float *MagAngle); //读取磁场数据
 
 #endif
