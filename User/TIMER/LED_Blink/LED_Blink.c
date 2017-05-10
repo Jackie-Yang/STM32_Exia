@@ -1,112 +1,145 @@
 #include "LED_Blink.h"
 #include "stdlib.h"
 
-//åˆå§‹åŒ–ä¸­
+//³õÊ¼»¯ÖÐ
 LED_BlinkMode Blink_Init[] = {
-    {1, 100},
-    {0, 100},
+    {1, 200},
+    {0, 200},
+    {1, 200},
+    {0, 200},
+    {1, 200},
+    {0, 200},
+    {1, 200},
+    {0, 200},
+    {1, 200},
+    {0, 1000},
     {BLINK_LOOP, 0}};
 
-//è“ç‰™è¿žæŽ¥
+//¾¯¸æ£¬ÆÕÍ¨´íÎó
+LED_BlinkMode Blink_WARNING[] = {
+    {1, 200},
+    {0, 200},
+    {1, 100},
+    {0, 100},
+    {1, 100},
+    {0, 1000},
+    {BLINK_LOOP, 0}};
+//ÑÏÖØ´íÎó
+LED_BlinkMode Blink_ERROR[] = {
+    {1, 100},
+    {0, 100},
+    {1, 100},
+    {0, 100},
+    {1, 100},
+    {0, 1000},
+    {BLINK_LOOP, 0}};
+
+//À¶ÑÀÁ¬½Ó
 LED_BlinkMode BT_Connect[] = {
     {1, 300},
     {0, 300},
     {1, 300},
-    {0, 300},
-    {1, 300},
-    {0, 300},
+    {0, 1000},
     {BLINK_LOOP, 0}};
 
 
-uint32_t BlinkCount = 0;        //è®¡æ•°
-uint32_t BlinkTimeCount = 0;    //è®¡æ—¶
-pLED_BlinkMode pCurBlinkMode = 0; //å½“å‰æ¨¡å¼
-pBlinkStackNode pBlinkStack = 0;
+uint32_t BlinkCount = 0;        //¼ÆÊý
+uint32_t BlinkTimeCount = 0;    //¼ÆÊ±
+pLED_BlinkMode pCurBlinkMode = 0; //µ±Ç°Ä£Ê½
+pBlinkCycNode pBlinkCyc = 0, pBlinkCycNode = 0;
 
 void LED_Blink_Init(void)
 {
     TIM_TimeBaseInitTypeDef TIM_TimeBaseStructure = {0};
 
-    //å®šæ—¶å™¨TIM1åˆå§‹åŒ–
+    //¶¨Ê±Æ÷TIM1³õÊ¼»¯
     TIM_TimeBaseStructInit(&TIM_TimeBaseStructure);
-    TIM_TimeBaseStructure.TIM_Period = 9999;                    //è®¡æ•°å‘¨æœŸ
-    TIM_TimeBaseStructure.TIM_Prescaler = 71;                   //é¢„åˆ†é¢‘72
-    TIM_TimeBaseStructure.TIM_ClockDivision = TIM_CKD_DIV1;     //è®¾ç½®æ—¶é’Ÿåˆ†å‰²:TDTS = Tck_tim
-    TIM_TimeBaseStructure.TIM_CounterMode = TIM_CounterMode_Up; //TIMå‘ä¸Šè®¡æ•°æ¨¡å¼
-    TIM_TimeBaseStructure.TIM_RepetitionCounter = 0;            //é‡å¤è®¡æ•°è®¾ç½®,åªæœ‰é«˜çº§å®šæ—¶å™¨éœ€è¦ï¼Œä¸è®¾ç½®çš„è¯å¯èƒ½å‡ æ¬¡æº¢å‡ºæ‰ä¸­æ–­ä¸€æ¬¡
-    TIM_TimeBaseInit(TIM1, &TIM_TimeBaseStructure);             //æ ¹æ®æŒ‡å®šçš„å‚æ•°åˆå§‹åŒ–TIMxçš„æ—¶é—´åŸºæ•°å•ä½
+    TIM_TimeBaseStructure.TIM_Period = 9999;                    //¼ÆÊýÖÜÆÚ
+    TIM_TimeBaseStructure.TIM_Prescaler = 71;                   //Ô¤·ÖÆµ72
+    TIM_TimeBaseStructure.TIM_ClockDivision = TIM_CKD_DIV1;     //ÉèÖÃÊ±ÖÓ·Ö¸î:TDTS = Tck_tim
+    TIM_TimeBaseStructure.TIM_CounterMode = TIM_CounterMode_Up; //TIMÏòÉÏ¼ÆÊýÄ£Ê½
+    TIM_TimeBaseStructure.TIM_RepetitionCounter = 0;            //ÖØ¸´¼ÆÊýÉèÖÃ,Ö»ÓÐ¸ß¼¶¶¨Ê±Æ÷ÐèÒª£¬²»ÉèÖÃµÄ»°¿ÉÄÜ¼¸´ÎÒç³ö²ÅÖÐ¶ÏÒ»´Î
+    TIM_TimeBaseInit(TIM1, &TIM_TimeBaseStructure);             //¸ù¾ÝÖ¸¶¨µÄ²ÎÊý³õÊ¼»¯TIMxµÄÊ±¼ä»ùÊýµ¥Î»
 
-    TIM_ClearITPendingBit(TIM1, TIM_IT_Update); //æ¸…é™¤TIM1æ›´æ–°ä¸­æ–­æ ‡å¿—
-    TIM_ITConfig(TIM1, TIM_IT_Update, ENABLE);  //ä½¿èƒ½æŒ‡å®šçš„TIM1ä¸­æ–­,å…è®¸æ›´æ–°ä¸­æ–­
+    TIM_ClearITPendingBit(TIM1, TIM_IT_Update); //Çå³ýTIM1¸üÐÂÖÐ¶Ï±êÖ¾
+    TIM_ITConfig(TIM1, TIM_IT_Update, ENABLE);  //Ê¹ÄÜÖ¸¶¨µÄTIM1ÖÐ¶Ï,ÔÊÐí¸üÐÂÖÐ¶Ï
     TIM_Cmd(TIM1, ENABLE);
 }
 
-void TIM1_UP_IRQHandler(void) //TIM1ä¸­æ–­
+void TIM1_UP_IRQHandler(void) //TIM1ÖÐ¶Ï
 {
-    if (TIM_GetITStatus(TIM1, TIM_IT_Update) != RESET) //æ£€æŸ¥TIM1æ›´æ–°ä¸­æ–­å‘ç”Ÿä¸Žå¦
+    if (TIM_GetITStatus(TIM1, TIM_IT_Update) != RESET) //¼ì²éTIM1¸üÐÂÖÐ¶Ï·¢ÉúÓë·ñ
     {
-        TIM_ClearITPendingBit(TIM1, TIM_IT_Update); //æ¸…é™¤TIM1æ›´æ–°ä¸­æ–­æ ‡å¿—
+        TIM_ClearITPendingBit(TIM1, TIM_IT_Update); //Çå³ýTIM1¸üÐÂÖÐ¶Ï±êÖ¾
 
-        if (pCurBlinkMode)  //å½“å‰å­˜åœ¨é—ªçƒæ¨¡å¼ï¼Œè¿›è¡Œè®¡æ—¶
+        if (pCurBlinkMode)  //µ±Ç°´æÔÚÉÁË¸Ä£Ê½£¬½øÐÐ¼ÆÊ±
         {
-            BlinkTimeCount += 10;   //è®¡æ—¶ï¼Œå®šæ—¶å™¨ä¸­æ–­è®¾ç½®æˆ10msï¼Œå› æ­¤æ¯æ¬¡åŠ 10
+            BlinkTimeCount += 10;   //¼ÆÊ±£¬¶¨Ê±Æ÷ÖÐ¶ÏÉèÖÃ³É10ms£¬Òò´ËÃ¿´Î¼Ó10
             if (BlinkTimeCount >= (pCurBlinkMode + BlinkCount)->Time)
             {
-                ++BlinkCount;   //æ—¶é—´åˆ°ï¼Œç¯åˆ‡æ¢åˆ°ä¸‹ä¸€ä¸ªçŠ¶æ€
+                ++BlinkCount;   //Ê±¼äµ½£¬µÆÇÐ»»µ½ÏÂÒ»¸ö×´Ì¬
                 BlinkTimeCount = 0;
+            }
+            else
+            {
+                return;     //Ê±¼äÃ»µ½£¬²»ÓÃÇÐ»»×´Ì¬
             }
         }
         else
         {
-            if (pBlinkStack) //å½“å‰ä¸å­˜åœ¨é—ªçƒæ¨¡å¼ï¼Œä»Žæ ˆé¡¶æ‹¿
+            if (pBlinkCycNode) 
             {
-                pCurBlinkMode = pBlinkStack->pBlinkMode;    //é—ªç¯æ¨¡å¼è®¾ç½®ä¸ºæ ˆä¸­æœ€å‰çš„æ¨¡å¼
+                pCurBlinkMode = pBlinkCycNode->pBlinkMode; //ÉÁµÆÄ£Ê½ÉèÖÃÎªÁ´±íÍ·µÄÄ£Ê½
                 BlinkTimeCount = 0;
                 BlinkCount = 0;
             }
             else
             {
-                return; //ä»æ— é—ªç¯æ¨¡å¼
+                return; //ÈÔÎÞÉÁµÆÄ£Ê½
             }
         }
 
-        //å¾ªçŽ¯çš„é—ªç¯æ¨¡å¼ï¼Œå¦‚æžœå½“å‰æ¨¡å¼ä¸ºæ ˆé¡¶ï¼Œåˆ™ç»§ç»­å¾ªçŽ¯ï¼Œå¦åˆ™ä¼šè®¾ç½®æˆæ ˆé¡¶çš„æ¨¡å¼
+        //Ñ­»·µÄÉÁµÆÄ£Ê½£¬¸ÃÄ£Ê½²»»á´Ó»·×´Á´±íÒÆ³ý£¬³ý·Çµ÷ÓÃStop
         if ((pCurBlinkMode + BlinkCount)->Status == BLINK_LOOP)
         {
-            if (!pBlinkStack)
+            if (!pBlinkCycNode)     //µ±Ç°µÄÄ£Ê½ÒÑ¾­±»ÒÆ³ý
             {
                 pCurBlinkMode = 0;
-                return; //é—ªç¯æ¨¡å¼å·²ç»å…¨éƒ¨è¢«ç§»é™¤å‡ºæ ˆ
+                return; //ÉÁµÆÄ£Ê½ÒÑ¾­È«²¿±»ÒÆ³ý³öÁ´±í
             }
-            //å¦‚æžœè®¾ç½®äº†æ–°çš„é—ªç¯æ¨¡å¼ï¼Œå°±æ¢æˆæ–°çš„é—ªç¯æ¨¡å¼
-            pCurBlinkMode = pBlinkStack->pBlinkMode;
+            else    //Ã»±»ÒÆ³ý£¬Ìøµ½ÏÂÒ»¸öÄ£Ê½
+            {
+                pBlinkCycNode = pBlinkCycNode->Next;
+            }
+            //Èç¹ûÉèÖÃÁËÐÂµÄÉÁµÆÄ£Ê½£¬¾Í»»³ÉÐÂµÄÉÁµÆÄ£Ê½
+            pCurBlinkMode = pBlinkCycNode->pBlinkMode;
             BlinkCount = 0;
         }
-        //ä¿æŒLEDç¯æœ€åŽçš„çŠ¶æ€å¹¶ç»“æŸå½“å‰é—ªç¯æ¨¡å¼ï¼Œå°†åˆ‡æ¢åˆ°æ ˆé¡¶çš„æ¨¡å¼
+        //±£³ÖLEDµÆ×îºóµÄ×´Ì¬²¢ÒÆ³ýµ±Ç°ÉÁµÆÄ£Ê½£¬ÇÐ»»µ½ÏÂÒ»¸öÄ£Ê½
         else if ((pCurBlinkMode + BlinkCount)->Status == BLINK_KEEP)
         {
-            StopBlink(pCurBlinkMode);
-            if (!pBlinkStack)
+            StopBlink(pCurBlinkMode); //ÊÍ·Åµ±Ç°Ä£Ê½Ö®ºó£¬»á×Ô¶¯ÇÐ»»µ½ÏÂÒ»¸öÄ£Ê½£¬Èç¹ûÒÑ¾­Ã»ÓÐÄ£Ê½ÔÚÁ´±íÖÐÔòpBlinkCycNode±äÎª0
+            if (!pBlinkCycNode) //µ±Ç°µÄÄ£Ê½ÒÑ¾­±»ÒÆ³ý
             {
                 pCurBlinkMode = 0;
-                return; //é—ªç¯æ¨¡å¼å·²ç»å…¨éƒ¨è¢«ç§»é™¤å‡ºæ ˆ
+                return; //ÉÁµÆÄ£Ê½ÒÑ¾­È«²¿±»ÒÆ³ý³öÁ´±í
             }
-            //è®¾ç½®æˆæ ˆé¡¶çš„æ¨¡å¼
-            pCurBlinkMode = pBlinkStack->pBlinkMode;
+            //ÉèÖÃ³ÉÐÂµÄÄ£Ê½
+            pCurBlinkMode = pBlinkCycNode->pBlinkMode;
             BlinkCount = 0;
         }
-        //å…³é—­LEDç¯å¹¶ç»“æŸå½“å‰é—ªç¯æ¨¡å¼ï¼Œå°†åˆ‡æ¢åˆ°æ ˆé¡¶çš„æ¨¡å¼
+        //¹Ø±ÕLEDµÆ²¢½áÊøµ±Ç°ÉÁµÆÄ£Ê½£¬½«ÇÐ»»µ½Õ»¶¥µÄÄ£Ê½
         else if ((pCurBlinkMode + BlinkCount)->Status == BLINK_STOP)
         {
             LED_OFF;
-            StopBlink(pCurBlinkMode);
-            if (!pBlinkStack)
+            StopBlink(pCurBlinkMode); //ÊÍ·Åµ±Ç°Ä£Ê½Ö®ºó£¬»á×Ô¶¯ÇÐ»»µ½ÏÂÒ»¸öÄ£Ê½£¬Èç¹ûÒÑ¾­Ã»ÓÐÄ£Ê½ÔÚÁ´±íÖÐÔòpBlinkCycNode±äÎª0
+            if (!pBlinkCycNode)       //µ±Ç°µÄÄ£Ê½ÒÑ¾­±»ÒÆ³ý
             {
                 pCurBlinkMode = 0;
-                return; //é—ªç¯æ¨¡å¼å·²ç»å…¨éƒ¨è¢«ç§»é™¤å‡ºæ ˆ
+                return; //ÉÁµÆÄ£Ê½ÒÑ¾­È«²¿±»ÒÆ³ý³öÁ´±í
             }
-            //è®¾ç½®æˆæ ˆé¡¶çš„æ¨¡å¼
-            pCurBlinkMode = pBlinkStack->pBlinkMode;
+            //ÉèÖÃ³ÉÐÂµÄÄ£Ê½
+            pCurBlinkMode = pBlinkCycNode->pBlinkMode;
             BlinkCount = 0;
         }
 
@@ -122,69 +155,92 @@ void TIM1_UP_IRQHandler(void) //TIM1ä¸­æ–­
     }
 }
 
-//å°†æ–°çš„é—ªçƒæ¨¡å¼æ’å…¥åˆ°æ ˆé¡¶ï¼Œå¦‚æžœå½“å‰æœ‰æ­£åœ¨è¿è¡Œçš„é—ªçƒæ¨¡å¼ï¼Œä¼šå°†å½“å‰é—ªçƒæ¨¡å¼è·‘å®Œä¸€æ¬¡æ‰ä¼šåˆ‡æ¢åˆ°æ–°çš„æ¨¡å¼
+//½«ÐÂµÄÉÁË¸Ä£Ê½²åÈëµ½Õ»¶¥£¬Èç¹ûµ±Ç°ÓÐÕýÔÚÔËÐÐµÄÉÁË¸Ä£Ê½£¬»á½«µ±Ç°ÉÁË¸Ä£Ê½ÅÜÍêÒ»´Î²Å»áÇÐ»»µ½ÐÂµÄÄ£Ê½
 void StartBlink(pLED_BlinkMode pBlinkMode)
 {
-    pBlinkStackNode pPreNode = 0;
-    pBlinkStackNode pNode = pBlinkStack;
+    pBlinkCycNode pNewNode = 0;
     if (pBlinkMode)
     {
-        while (pNode)   //è‹¥é“¾è¡¨ä¸­æ‰¾åˆ°è¯¥èŠ‚ç‚¹ï¼Œå–å‡ºæ¥æ”¾åˆ°é“¾è¡¨å¤´ï¼Œä¿è¯é“¾è¡¨ä¸­çš„æ¨¡å¼ä¸é‡å¤
+        if (pBlinkCyc)    //Á´±í´æÔÚ£¬Ñ°ÕÒÁ´±íÖÐÏàÍ¬µÄÄ£Ê½
         {
-            if (pNode->pBlinkMode == pBlinkMode)
+            pBlinkCycNode pNode = pBlinkCyc;
+            do  //ÈôÁ´±íÖÐÕÒµ½ÏàÍ¬µÄÄ£Ê½£¬Ôò²»²åÈë
             {
-                //å°†è¯¥èŠ‚ç‚¹ä»Žé“¾è¡¨ä¸­é™¤åŽ»
-                if (pPreNode)
+                if (pNode->pBlinkMode == pBlinkMode)
                 {
-                    pPreNode->Next = pNode->Next;
-                }
-                else //è¯¥èŠ‚ç‚¹å·²ç»æ˜¯é¦–ç»“ç‚¹
-                {
+                    pBlinkCycNode = pNode;  //´ÓÐÂÉèÖÃµÄÄ£Ê½¿ªÊ¼ÉÁµÆ
                     return;
                 }
-                break;
-            }
-            pPreNode = pNode;
-            pNode = pNode->Next;
-        }
-
-        if (!pNode) //é“¾è¡¨ä¸­æ²¡æœ‰è¯¥èŠ‚ç‚¹ï¼Œåˆ†é…èŠ‚ç‚¹
-        {
-            pNode = malloc(sizeof(BlinkStackNode));
-            if (!pNode)
+                pNode = pNode->Next;
+            } while (pNode != pBlinkCyc);
+            //Ã»ÕÒµ½¸ÃÄ£Ê½£¬ÐÂ½¨½Úµã´æ·Å
+            pNewNode = malloc(sizeof(BlinkCycNode));
+            if (!pNewNode)
             {
                 return;
             }
-            pNode->pBlinkMode = pBlinkMode;
+            //²åÈë»·×´Á´±í
+            pNewNode->pBlinkMode = pBlinkMode;
+            pNewNode->Next = pBlinkCyc;
+            pNewNode->Pre = pBlinkCyc->Pre;
+            pBlinkCyc->Pre->Next = pNewNode;
+            pBlinkCyc->Pre = pNewNode;
         }
-        //å°†æ–°çš„é—ªçƒæ¨¡å¼æ’å…¥åˆ°æ ˆé¡¶
-        pNode->Next = pBlinkStack;
-        pBlinkStack = pNode;
+        else //Á´±í²»´æÔÚ£¬ÐÂ½¨µÚÒ»¸ö½Úµã
+        {
+            pNewNode = malloc(sizeof(BlinkCycNode));
+            if (!pNewNode)
+            {
+                return;
+            }
+            pNewNode->pBlinkMode = pBlinkMode;
+            pNewNode->Next = pNewNode; //»·×´Á´±í
+            pNewNode->Pre = pNewNode;
+        }
+        pBlinkCyc = pNewNode;         //ÐÂ²åÈëµÄ½Úµã×÷ÎªÁ´±íÍ·
+        pBlinkCycNode = pBlinkCyc;    //´ÓÐÂÉèÖÃµÄÄ£Ê½¿ªÊ¼ÉÁµÆ
     }
 }
 
-//èƒ½è‡ªå·±Endçš„é—ªçƒæ¨¡å¼ä¸è¦åŽ»Stopï¼Œç”±äºŽå®ƒä¼šè‡ªå·±é‡Šæ”¾ï¼Œå¦åˆ™å¦‚æžœåˆšå¥½Stopæ—¶å®šæ—¶å™¨å°†å®ƒé‡Šæ”¾äº†å¯èƒ½ä¼šå†²çª
+//ÄÜ×Ô¼ºEndµÄÉÁË¸Ä£Ê½²»ÒªÈ¥Stop£¬ÓÉÓÚËü»á×Ô¼ºÊÍ·Å£¬·ñÔòÈç¹û¸ÕºÃStopÊ±¶¨Ê±Æ÷½«ËüÊÍ·ÅÁË¿ÉÄÜ»á³åÍ»
 void StopBlink(pLED_BlinkMode pBlinkMode)
 {
-    pBlinkStackNode pPreNode = 0;
-    pBlinkStackNode pNode = pBlinkStack;
-    while (pNode)
+    pBlinkCycNode pNode = pBlinkCyc;
+    if(!pNode)
+    {
+        return;
+    }
+    do
     {
         if (pNode->pBlinkMode == pBlinkMode)
         {
-            //å°†è¯¥èŠ‚ç‚¹ä»Žé“¾è¡¨ä¸­é™¤åŽ»
-            if (pPreNode)
+            if (pNode == pBlinkCyc) //¸Ã½ÚµãÊÇÊ×½áµã
             {
-                pPreNode->Next = pNode->Next;
+                if (pNode->Next == pNode) //Ö»ÓÐÒ»¸ö½Úµã
+                {
+                    pBlinkCyc = 0;    
+                }
+                else
+                {
+                    pBlinkCyc = pNode->Next;  //Ê×½ÚµãÖ¸ÏòÏÂÒ»¸ö
+                }
             }
-            else    //è¯¥èŠ‚ç‚¹æ˜¯é¦–ç»“ç‚¹
+            if (pNode == pBlinkCycNode) //¸Ã½ÚµãÊÇµ±Ç°½Úµã
             {
-                pBlinkStack = pNode->Next;
+                if (pNode->Next == pNode) //Ö»ÓÐÒ»¸ö½Úµã
+                {
+                    pBlinkCycNode = 0;
+                }
+                else
+                {
+                    pBlinkCycNode = pNode->Next; //µ±Ç°½ÚµãÖ¸ÏòÏÂÒ»¸ö
+                }
             }
+            pNode->Pre->Next = pNode->Next;
+            pNode->Next->Pre = pNode->Pre;
             free(pNode);
             return;
         }
-        pPreNode = pNode;
         pNode = pNode->Next;
-    }
+    } while (pNode != pBlinkCyc);
 }

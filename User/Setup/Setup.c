@@ -23,13 +23,15 @@ int8_t init(void)
 {
 	int8_t ret = 0;
 	RCC_Configuration( );
-	delay_ms(500);				//上电先延时一小段时间，否则mpu6050会初始化失败
-
 	GPIO_Configuration( );	 
 	USART_Configuration( );
 	NVIC_Configuration();
 	FLASH_Unlock();
 	EE_Init();
+	LED_Blink_Init(); //定时器1，LED闪烁
+	StartBlink(Blink_Init); //LED闪烁：初始化
+
+	delay_ms(500); //上电先延时一小段时间，否则mpu6050会初始化失败
 
 	//初始化状态数据包
 	memset(&stQuadrotor_State, 0, sizeof(stQuadrotor_State));
@@ -43,13 +45,14 @@ int8_t init(void)
 	EXIT_Configuration(); //配置外部中断，蓝牙连接时触发
 	check_BT();			  //更新蓝牙状态
 
-	LED_Blink_Init();   //定时器1，LED闪烁
-	StartBlink(Blink_Init); //LED闪烁：初始化
 
+	if(IMU_Init())
+	{
+		StartBlink(Blink_ERROR); //严重错误，闪灯，退出
+		return -1;
+	}
 
-	ret |= IMU_Init();
-
-	MS5611_Init();
+	ret |= MS5611_Init();
 
 	
 	PID_init( );		   		//初始化PID参数，从flash读取
@@ -65,7 +68,12 @@ int8_t init(void)
 
 	StopBlink(Blink_Init);  //初始化完毕LED闪烁停止
 
-	return ret;
+	if (ret)	//普通传感器初始化错误，闪警告灯，继续运行
+	{
+		StartBlink(Blink_WARNING);
+	}
+
+	return 0;
 }
 
 

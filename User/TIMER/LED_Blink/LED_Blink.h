@@ -4,14 +4,14 @@
 #define LED_OFF GPIO_SetBits(GPIOC,GPIO_Pin_13)
 #define LED_ON	GPIO_ResetBits(GPIOC,GPIO_Pin_13)
 
-/* ç›´æ¥æ“ä½œå¯„å­˜å™¨çš„æ–¹æ³•æ§åˆ¶IO */
-#define	digitalHi(p,i)				{p->BSRR=i;}			//è®¾ç½®ä¸ºé«˜ç”µå¹³		
-#define digitalLo(p,i)				{p->BRR	=i;}			//è¾“å‡ºä½ç”µå¹³
-#define digitalToggle(p,i)		    {p->ODR ^=i;}			//è¾“å‡ºåè½¬çŠ¶æ€
+/* Ö±½Ó²Ù×÷¼Ä´æÆ÷µÄ·½·¨¿ØÖÆIO */
+#define	digitalHi(p,i)				{p->BSRR=i;}			//ÉèÖÃÎª¸ßµçÆ½		
+#define digitalLo(p,i)				{p->BRR	=i;}			//Êä³öµÍµçÆ½
+#define digitalToggle(p,i)		    {p->ODR ^=i;}			//Êä³ö·´×ª×´Ì¬
 
 #define LED	     GPIO_Pin_13
 
-/* å®å®šä¹‰æ§åˆ¶ä¸¤ç›LED */
+/* ºê¶¨Òå¿ØÖÆÁ½ÕµLED */
 #define TOGGLE(led)		digitalToggle(GPIOC, led)
 #define ON(led)				digitalHi(GPIOC, led)
 #define OFF(led)			digitalLo(GPIOC, led)
@@ -25,17 +25,19 @@ typedef const struct _LED_BLINK_MODE_
     uint32_t Time;
 } LED_BlinkMode, *pLED_BlinkMode;
 
-typedef struct _BLINK_STACK_NODE_
+typedef struct _BLINK_CYC_NODE_
 {
     pLED_BlinkMode pBlinkMode;
-    struct _BLINK_STACK_NODE_* Next;
-} BlinkStackNode, *pBlinkStackNode;
+    struct _BLINK_CYC_NODE_* Next;
+    struct _BLINK_CYC_NODE_* Pre;
+} BlinkCycNode, *pBlinkCyckNode;
 
 extern LED_BlinkMode Blink_Init[];
 extern LED_BlinkMode BT_Connect[];
-extern LED_BlinkMode BT_DisConnect[];
+extern LED_BlinkMode Blink_WARNING[];
+extern LED_BlinkMode Blink_ERROR[];
 
-void LED_Blink_Init(void); //å®šæ—¶å™¨1åˆå§‹åŒ–ï¼Œç”¨äºLEDé—ªçƒ
+void LED_Blink_Init(void); //¶¨Ê±Æ÷1³õÊ¼»¯£¬ÓÃÓÚLEDÉÁË¸
 void StartBlink(pLED_BlinkMode pBlinkMode);
 void StopBlink(pLED_BlinkMode pBlinkMode);
 #endif
