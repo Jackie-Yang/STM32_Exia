@@ -113,7 +113,7 @@ void USART1_IRQHandler()
 			}
 			case COMMAND_SET_HIGH_REF:
 			{
-				Zero_Pressure = 0;
+				MS5611_SetReference();
 				High.Accel_last = 0;
 				High.Accel_cur = 0;
 				High.speed_last = 0;

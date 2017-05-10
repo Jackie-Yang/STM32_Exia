@@ -88,35 +88,46 @@ void TIM4_IRQHandler(void)   //TIM4中断进行参数更新
 			{
 				case 0:
 				{
-					MS5611_Read(MS561101BA_D2_OSR_4096);	  //发送指令让MS5611测量温度值
+					if(MS5611_AskTemperature()) //发送指令让MS5611测量温度值
+					{
+						TIM4_state = 3;	//失败，跳过
+					}
 					break;
 				}
 				case 1:
 				{
-					D2_Temp = MS5611_Get( );			 	 //10ms后获取数据
+					if (MS5611_GetTemperature()) //10ms后获取数据
+					{
+						TIM4_state = 3; //失败，跳过
+						break;
+					}
+					if (MS5611_AskPressure()) //发送指令让MS5611测量气压值
+					{
+						TIM4_state = 3; //失败，跳过
+						break;
+					}
 					break;
 				}
 				case 2:
 				{
-					MS5611_Read(MS561101BA_D1_OSR_4096);	  //发送指令让MS5611测量气压值
-					break;
+					if (MS5611_GetPressure()) //10ms后获取数据
+					{
+						TIM4_state = 3; //失败，跳过
+					}
+					else
+					{ //计算温度、气压值
+						MS5611_CalResult(&stQuadrotor_State.f_MS5611_Press,
+										 &stQuadrotor_State.f_MS5611_Temp,
+										 &stQuadrotor_State.f_MS5611_HIGH);
+					}
+					PID_High_Set(); //即高度采样间隔50ms
+					break;									
 				}
 				case 3:
 				{
-					D1_Pres = MS5611_Get( );
-					MS5611_GetPressure( );					//10ms后获取数据,计算温度、气压值	
-					PID_High_Set( );			
-					break;									//即高度采样间隔50ms
-				}
-				case 4:
-				{
 					READ_MPU6050_TEMP(&stQuadrotor_State.f_MPU6050_Temp); //读取MPU6050温度
-					break;
-				}
-				case 5:
-				{
-					// Read_HMC5883L(stQuadrotor_State.s16_HMC5883L, &stQuadrotor_State.f_HMC5883L_Angle); //获取地磁数据（该阶段暂时没有融合地磁数据）
 					TIM4_state = 0;
+					break;
 				}
 				default:
 				{

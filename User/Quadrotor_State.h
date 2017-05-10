@@ -28,9 +28,9 @@ typedef struct __QUADROTOR_STATE__
 	int16_t s16_Accel[3];
 	int16_t s16_Gyro[3];
 	float f_MPU6050_Temp;
-	int32_t s32_MS5611_Temp;
-	int32_t s32_MS5611_Press;
-	int32_t s32_MS5611_HIGH;
+	float f_MS5611_Temp;
+	float f_MS5611_Press;
+	float f_MS5611_HIGH;
 	int16_t s16_HMC5883L[3];
 	float f_HMC5883L_Angle;
 	uint16_t u16_KS10X_High;

@@ -43,24 +43,21 @@
 #define MS561101BA_PROM_REG_SIZE 2 // size in bytes of a prom registry.
 
 
-extern double MS5611_Temperature;
-extern double MS5611_Pressure,Zero_Pressure;
-extern double MS5611_high;
-
-extern u32 D2_Temp,D1_Pres;	//读取的温度传感器数据 ,读取的气压数据; 
 
 
 /********************函数声明**************************/
-void MS5611_Init(void);			 //芯片初始化，读取芯片中PROM数据
-void MS5611_Reset(void);		 //芯片充值
-void MS5611_readPROM(void);		 //读取芯片中PROM数据
-
-void MS5611_Read(uint8_t command);	   //向芯片发送读取指令
-uint32_t MS5611_Get(void);			   //从芯片中获取测量结果
+int8_t MS5611_Init(void);        //芯片初始化，读取芯片中PROM数据
 
 
-double MS5611_GetTemperature(void);	   //计算温度结果
-void MS5611_GetPressure(void);		   //计算气压结果，并换算成相对高度
+//需要向传感器发送读取温度请求，约8ms后获取数据，同样方式获得气压，接下来计算结果
+int8_t MS5611_AskTemperature(void);
+int8_t MS5611_GetTemperature(void);
+int8_t MS5611_AskPressure(void);
+int8_t MS5611_GetPressure(void);
 
- 
+//将下次测量的高度作为草靠高度
+void MS5611_SetReference(void);
+//计算气压结果，并换算成相对高度
+void MS5611_CalResult(__packed float *Press, __packed float *Temp, __packed float *High);
+
 #endif 
