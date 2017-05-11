@@ -16,9 +16,11 @@
 #define ON(led)				digitalHi(GPIOC, led)
 #define OFF(led)			digitalLo(GPIOC, led)
 
-#define BLINK_LOOP -1
-#define BLINK_KEEP -2
-#define BLINK_STOP -3
+#define BLINK_REPEAT_START      -1
+#define BLINK_REPEAT            -2
+#define BLINK_LOOP              -3
+#define BLINK_STOP              -4
+
 typedef const struct _LED_BLINK_MODE_
 {
     int8_t Status;
@@ -30,12 +32,14 @@ typedef struct _BLINK_CYC_NODE_
     pLED_BlinkMode pBlinkMode;
     struct _BLINK_CYC_NODE_* Next;
     struct _BLINK_CYC_NODE_* Pre;
-} BlinkCycNode, *pBlinkCyckNode;
+} BlinkCycNode, *pBlinkCycNode;
 
 extern LED_BlinkMode Blink_Init[];
 extern LED_BlinkMode BT_Connect[];
 extern LED_BlinkMode Blink_WARNING[];
 extern LED_BlinkMode Blink_ERROR[];
+extern LED_BlinkMode Blink_WARNING_ONCE[];
+extern LED_BlinkMode Blink_ERROR_ONCE[];
 
 void LED_Blink_Init(void); //定时器1初始化，用于LED闪烁
 void StartBlink(pLED_BlinkMode pBlinkMode);
