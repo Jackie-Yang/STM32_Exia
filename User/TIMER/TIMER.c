@@ -6,7 +6,9 @@
 #include "MS5611.h"
 #include "PID.h"
 #include "KS10X.h"
+#include "Receiver.h"
 #include "Motor.h"
+#include "LED_Blink.h"
 
 u8 TIM4_state = 0;
 u8 KS10X_check = 0;
@@ -39,28 +41,32 @@ void TIM4_IRQHandler(void)   //TIM4中断进行参数更新
 	if (TIM_GetITStatus(TIM4, TIM_IT_Update) != RESET)  //检查TIM4更新中断发生与否
 	{
 		TIM_ClearITPendingBit(TIM4, TIM_IT_Update);  //清除TIM4更新中断标志
-
-		GetAttitude(stQuadrotor_State.s16_Accel,
+		
+		//10ms一次姿态更新
+		if(GetAttitude(stQuadrotor_State.s16_Accel,
 					stQuadrotor_State.s16_Gyro,
 					stQuadrotor_State.s16_HMC5883L,
 					&stQuadrotor_State.f_HMC5883L_Angle,
 					&stQuadrotor_State.f_Roll,
 					&stQuadrotor_State.f_Pitch,
-					&stQuadrotor_State.f_Yaw);
+					&stQuadrotor_State.f_Yaw))
+		{
+			StartBlink(Blink_ERROR_ONCE);
+		}
+		else
+		{
+			Pitch.Gyro_cur = (float)stQuadrotor_State.s16_Gyro[0] / 16.4;
+			Roll.Gyro_cur = (float)stQuadrotor_State.s16_Gyro[1] / 16.4;
+			Yaw.Gyro_cur = (float)stQuadrotor_State.s16_Gyro[2] / 16.4;
 
-		Pitch.Gyro_cur = (float)stQuadrotor_State.s16_Gyro[0] / 16.4;
-		Roll.Gyro_cur = (float)stQuadrotor_State.s16_Gyro[1] / 16.4;
-		Yaw.Gyro_cur = (float)stQuadrotor_State.s16_Gyro[2] / 16.4;
+			Yaw.angle_cur = stQuadrotor_State.f_Yaw;
+			Pitch.angle_cur = stQuadrotor_State.f_Pitch;
+			Roll.angle_cur = stQuadrotor_State.f_Roll;
+		}
 
-		Yaw.angle_cur = stQuadrotor_State.f_Yaw;
-		Pitch.angle_cur = stQuadrotor_State.f_Pitch;
-		Roll.angle_cur = stQuadrotor_State.f_Roll;
-		// AHRSupdate(	stQuadrotor_State.s16_Accel,
-		// 			stQuadrotor_State.s16_Gyro,
-		// 			stQuadrotor_State.s16_HMC5883L,
-		// 			&stQuadrotor_State.f_HMC5883L_Angle); //10ms一次姿态更新
-
-		// Read_MPU6050_DMP(stQuadrotor_State.s16_Accel, stQuadrotor_State.s16_Gyro);
+		//获取接收器数据，如果接收器没有收到信号，则不会更新，因此串口可以在没有接收器时进行设置
+		//但如果接收器接收到数据，定时器将会持续进行更新，此时串口的控制将被屏蔽
+		GetReceiverData(&stQuadrotor_State.u16_Rudd);
 
 		Roll_Set = 50.0 * (stQuadrotor_State.u16_Aile - 1100.0) / 800.0 - 25.0;
 		Pitch_Set = -(50.0 * (stQuadrotor_State.u16_Elev - 1100.0) / 800.0 - 25.0);

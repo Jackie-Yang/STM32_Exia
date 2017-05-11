@@ -10,5 +10,6 @@
 // #define REC_ELEV	REC(3) 	//Inputs[3].capture	 //升降	  俯仰
 
 void Receiver_Init(void); //定时器3初始化，用于捕获接收器脉冲信号
+void GetReceiverData(__packed uint16_t *pData);
 
 #endif

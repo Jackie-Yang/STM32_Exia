@@ -1,5 +1,4 @@
 #include "Receiver.h"
-#include "Setup.h"
 
 static TIM_ICInitTypeDef TIM_ICInitStructure = {0};
 
@@ -27,6 +26,10 @@ typedef struct _PWM_State_
 } PWM_State;
 
 PWM_State Inputs[4] = {{0}};
+
+uint16_t ReceiverData[4] = {0};
+
+int8_t IsUpdated = 0;
 
 //定时器3初始化，用于读取遥控器接收信号
 void Receiver_Init(void)
@@ -74,7 +77,7 @@ void TIM3_IRQHandler(void)
 {
     u8 i;
     u16 val = 0;
-    __packed uint16_t *pData = &stQuadrotor_State.u16_Rudd;
+    // __packed uint16_t *pData = &stQuadrotor_State.u16_Rudd;
     for (i = 0; i < 4; i++)
     {
         //struct TIM_Channel channel = Channels[i];
@@ -124,13 +127,15 @@ void TIM3_IRQHandler(void)
                 //计算高电平的时间
                 if (Inputs[i].fall > Inputs[i].rise)
                 {
-                    //                  Inputs[i].capture = (Inputs[i].fall - Inputs[i].rise);
-                    *(pData + i) = Inputs[i].fall - Inputs[i].rise;
+                    // Inputs[i].capture = (Inputs[i].fall - Inputs[i].rise);
+                    ReceiverData[i] = Inputs[i].fall - Inputs[i].rise;
+                    IsUpdated = 1;
                 }
                 else
                 {
-                    //                  Inputs[i].capture = ((0xffff - Inputs[i].rise) + Inputs[i].fall);
-                    *(pData + i) = (0xffff - Inputs[i].rise) + Inputs[i].fall;
+                    // Inputs[i].capture = ((0xffff - Inputs[i].rise) + Inputs[i].fall);
+                    ReceiverData[i] = (0xffff - Inputs[i].rise) + Inputs[i].fall;
+                    IsUpdated = 1;
                 }
 
                 //REC(i) = Inputs[i].capture;			//改为直接使用DMA缓存，方便传输
@@ -140,5 +145,17 @@ void TIM3_IRQHandler(void)
                 //failsafeCnt = 0;
             }
         }
+    }
+}
+
+void GetReceiverData(__packed uint16_t *pData)
+{
+    if (IsUpdated)
+    {
+        pData[0] = ReceiverData[0];
+        pData[1] = ReceiverData[1];
+        pData[2] = ReceiverData[2];
+        pData[3] = ReceiverData[3];
+        IsUpdated = 0;
     }
 }
