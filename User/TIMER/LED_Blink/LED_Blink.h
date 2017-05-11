@@ -35,13 +35,18 @@ typedef struct _BLINK_CYC_NODE_
 } BlinkCycNode, *pBlinkCycNode;
 
 extern LED_BlinkMode Blink_Init[];
-extern LED_BlinkMode BT_Connect[];
+extern LED_BlinkMode Blink_BT_Connect[];
 extern LED_BlinkMode Blink_WARNING[];
 extern LED_BlinkMode Blink_ERROR[];
 extern LED_BlinkMode Blink_WARNING_ONCE[];
 extern LED_BlinkMode Blink_ERROR_ONCE[];
+extern LED_BlinkMode Blink_ReceiveOrder[];
+extern LED_BlinkMode Blink_ErrorOrder[];
 
 void LED_Blink_Init(void); //定时器1初始化，用于LED闪烁
+//立刻开始闪烁，被中断的闪烁之后将重新开始
+void StartBlinkNow(pLED_BlinkMode pBlinkMode);
+//开始闪烁（延迟，当前闪烁完再闪）
 void StartBlink(pLED_BlinkMode pBlinkMode);
 void StopBlink(pLED_BlinkMode pBlinkMode);
 #endif

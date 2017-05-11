@@ -24,26 +24,22 @@
 LED_BlinkMode Blink_Init[] = {
     {1, 200},
     {0, 200},
-    {BLINK_REPEAT, 5},
+    {BLINK_REPEAT, 10},
     {0, 1000},
     {BLINK_LOOP, 0}};
 
 //警告，普通错误
 LED_BlinkMode Blink_WARNING[] = {
-    {1, 200},
-    {0, 200},
     {1, 100},
     {0, 100},
-    {1, 100},
+    {BLINK_REPEAT, 3},
     {0, 1000},
     {BLINK_LOOP, 0}};
 //闪一次，普通错误
 LED_BlinkMode Blink_WARNING_ONCE[] = {
-    {1, 200},
-    {0, 200},
     {1, 100},
     {0, 100},
-    {1, 100},
+    {BLINK_REPEAT, 3},
     {0, 1000},
     {BLINK_STOP, 0}};
 //严重错误
@@ -51,26 +47,37 @@ LED_BlinkMode Blink_ERROR[] = {
     {1, 50},
     {0, 50},
     {BLINK_REPEAT, 3},
-    {0, 1000},
+    {0, 500},
     {BLINK_LOOP, 0}};
 //闪一次，严重错误
 LED_BlinkMode Blink_ERROR_ONCE[] = {
     {1, 50},
     {0, 50},
-    {1, 50},
-    {0, 50},
-    {1, 50},
-    {0, 1000},
+    {BLINK_REPEAT, 3},
+    {0, 500},
     {BLINK_STOP, 0}};
 
 //蓝牙连接
-LED_BlinkMode BT_Connect[] = {
+LED_BlinkMode Blink_BT_Connect[] = {
     {1, 300},
     {0, 300},
-    {1, 300},
-    {0, 1000},
+    {BLINK_REPEAT, 2},
+    {0, 2000},
     {BLINK_LOOP, 0}};
 
+LED_BlinkMode Blink_ReceiveOrder[] = {
+    {1, 100},
+    {0, 100},
+    {BLINK_REPEAT, 2},
+    {0, 1000},
+    {BLINK_STOP, 0}};
+
+LED_BlinkMode Blink_ErrorOrder[] = {
+    {1, 50},
+    {0, 50},
+    {BLINK_REPEAT, 2},
+    {0, 1000},
+    {BLINK_STOP, 0}};
 
 uint32_t BlinkIndex = 0;        //计数
 uint32_t BlinkTimeCount = 0;    //计时
@@ -196,6 +203,12 @@ void TIM1_UP_IRQHandler(void) //TIM1中断
         }
         
     }
+}
+
+void StartBlinkNow(pLED_BlinkMode pBlinkMode)
+{
+    StartBlink(pBlinkMode);
+    pCurBlinkMode = 0;
 }
 
 //将新的闪烁模式插入到栈顶，如果当前有正在运行的闪烁模式，会将当前闪烁模式跑完一次才会切换到新的模式

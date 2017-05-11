@@ -498,9 +498,13 @@ void USART1_IRQHandler()
 				Yaw.Gyro_Kd = ((float)receive_Data) / 100.0;		   //
 				break;
 			}
-			default:break;
+			default:
+			{
+				StartBlinkNow(Blink_ErrorOrder);
+				return;
+			}
 		}
-		
+		StartBlinkNow(Blink_ReceiveOrder);
 	}  
 }
 
@@ -517,7 +521,7 @@ void check_BT(void)      //检查蓝牙状态
 	  	//TIM_Cmd(TIM4, ENABLE);  			//使能TIM4,开始数据传输	
 		DMA_Cmd(DMA1_Channel4, ENABLE);	
 		USART_DMACmd(USART1,USART_DMAReq_Tx,ENABLE);
-		StartBlink(BT_Connect);
+		StartBlink(Blink_BT_Connect);
 		// LED_ON;		
 	  }	
 	  else
@@ -525,7 +529,7 @@ void check_BT(void)      //检查蓝牙状态
 	  //	TIM_Cmd(TIM4, DISABLE); 
 		DMA_Cmd(DMA1_Channel4, DISABLE); 
 		USART_DMACmd(USART1,USART_DMAReq_Tx,DISABLE);
-		StopBlink(BT_Connect);
+		StopBlink(Blink_BT_Connect);
 		// LED_OFF;
 	  }	
 }

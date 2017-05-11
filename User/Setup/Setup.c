@@ -48,7 +48,8 @@ int8_t init(void)
 
 	if(IMU_Init())
 	{
-		StartBlink(Blink_ERROR); //严重错误，闪灯，退出
+		StopBlink(Blink_Init);		//初始化完毕LED闪烁停止
+		StartBlinkNow(Blink_ERROR); //严重错误，闪灯，退出
 		return -1;
 	}
 
