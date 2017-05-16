@@ -2,7 +2,7 @@
 #include "delay.h"
 //#include "USART.h"
 
-uint32_t I2C_HoldTime = 2;
+uint32_t I2C_HoldTime = 0;
 
 /*******************************I2C基本操作***********************************/
 
@@ -12,9 +12,9 @@ void I2C_Start(void)
 {
 	I2C_SDA=1;	  	  
 	I2C_SCL=1;
-	// delay_us(I2C_HoldTime);
+	delay_us(I2C_HoldTime);
 	I2C_SDA=0;            //I2C时钟线SCL为高时拉低I2C数据线SDA，发送开始信号
-	// delay_us(I2C_HoldTime);
+	delay_us(I2C_HoldTime);
 	I2C_SCL=0;            //拉低I2C时钟线，准备数据传输 
 }	 
 
@@ -26,10 +26,10 @@ void I2C_Stop(void)
 {          
 	I2C_SCL=0;
 	I2C_SDA=0;
-	// delay_us(I2C_HoldTime);
+	delay_us(I2C_HoldTime);
 	I2C_SCL=1; 
 	I2C_SDA=1;    	     //I2C时钟线SCL为高时拉高I2C数据线SDA，发送结束信号 
-	// delay_us(I2C_HoldTime);	
+	delay_us(I2C_HoldTime);	
 	I2C_SCL=0;						   	
 }
 
@@ -53,7 +53,7 @@ s8 I2C_Wait_Ack(void)
 			I2C_Stop();
 			return -1;
 		}
-		// delay_us(I2C_HoldTime);
+		//// delay_us(I2C_HoldTime);
 	}
 	I2C_SCL=0;                     //时钟输出0 	
 	SDA_OUT();    //改为输出之前I2C_SCL记得变为低电平，否则会发出开始或者结束信号
@@ -67,7 +67,7 @@ void I2C_Ack(void)		  //应答信号位SCL为高电平时，SDA为低电平
 	I2C_SDA=0;
 ////	delay_us(I2C_HoldTime);
 	I2C_SCL=1;
-	// delay_us(I2C_HoldTime);
+	delay_us(I2C_HoldTime);
 	I2C_SCL=0;
 }
 /****************************不产生ACK应答**************************/		    
@@ -77,7 +77,7 @@ void I2C_NAck(void)		//非应答信号位SCL为高电平时，SDA为高电平
 	I2C_SDA=1;
 	// delay_us(I2C_HoldTime);
 	I2C_SCL=1;
-	// delay_us(I2C_HoldTime);
+	delay_us(I2C_HoldTime);
 	I2C_SCL=0;
 }	
 
@@ -94,9 +94,9 @@ s8 I2C_Send_Data(u8 data)
         data<<=1; 	  
 		// delay_us(I2C_HoldTime);                 
 		I2C_SCL=1;
-		// delay_us(I2C_HoldTime);                 
+		delay_us(I2C_HoldTime);                 
 		I2C_SCL=0;	
-		// delay_us(I2C_HoldTime);                 
+		delay_us(I2C_HoldTime);                 
     }	
 	return I2C_Wait_Ack( ); 
 } 	   
@@ -112,14 +112,14 @@ u8 I2C_Read_Data(u8 ack)
     for(i=0;i<8;i++ )                //高位先发送 
 	{
         I2C_SCL=0; 
-        // delay_us(I2C_HoldTime);
+        delay_us(I2C_HoldTime);
 		I2C_SCL=1;
         receive<<=1;
         if(READ_SDA)
 		{
 			receive++;   	//读到该位为1，+1（即置1）
 		}
-		// delay_us(I2C_HoldTime); 
+		delay_us(I2C_HoldTime); 
     }	
 	I2C_SCL=0; 	
 	SDA_OUT(); 		//改为输出之前I2C_SCL记得变为低电平，否则会发出开始或者结束信号		 
@@ -325,4 +325,14 @@ s8 I2C_WriteBit(u8 device_address, u8 address, u8 bitNum, u8 data)
 	read_data = (data != 0) ? (read_data | (1 << bitNum)) : (read_data & ~(1 << bitNum));
 	ret |= I2C_SendByte(device_address, address, read_data);
 	return ret;
+}
+
+void I2C_SetHoldTime(uint32_t HoldTime)
+{
+	I2C_HoldTime = HoldTime;
+}
+
+uint32_t I2C_GetHoldTime(void)
+{
+	return I2C_HoldTime;
 }

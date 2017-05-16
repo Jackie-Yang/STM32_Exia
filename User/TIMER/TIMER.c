@@ -51,7 +51,7 @@ void TIM4_IRQHandler(void)   //TIM4中断进行参数更新
 					&stQuadrotor_State.f_Pitch,
 					&stQuadrotor_State.f_Yaw))
 		{
-			StartBlinkNow(Blink_ERROR_ONCE);
+			StartBlink(Blink_ERROR_ONCE);
 		}
 		else
 		{

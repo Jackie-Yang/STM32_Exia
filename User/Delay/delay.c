@@ -8,8 +8,12 @@
 *******************************************/
 void delay_us(uint32_t nus)
 {
-	uint32_t temp;  
-    SysTick->LOAD = nus*9;       /*主频72M的情况下每计数9次为1us*/
+	uint32_t temp;
+	if (!nus)
+	{
+		return;
+	}
+	SysTick->LOAD = nus*9;       /*主频72M的情况下每计数9次为1us*/
     SysTick->VAL=0x00;           /*计数器清0,因为currrent字段被手动清零时,load将自动重装到VAL中*/  
     SysTick->CTRL = 0x01;        /*配置使异常生效,也就是计数器倒数到0时将发出异常通知*/  
     do  
@@ -29,7 +33,11 @@ void delay_us(uint32_t nus)
 *******************************************/
 void delay_ms(uint16_t nms)
 {
- 	uint32_t temp;
+	uint32_t temp;
+	if (!nms)
+	{
+		return;
+	}
 	SysTick->LOAD=nms*9000;
 	SysTick->VAL=0X00;
 	SysTick->CTRL=0X01;

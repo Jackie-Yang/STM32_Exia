@@ -70,6 +70,9 @@ s8 I2C_SendByte_NoAddr(u8 device_address, u8 data); //向指定设备发送一个字节数据
 s8 I2C_WriteBits(u8 device_address, u8 address, u8 bitStart, u8 length, u8 data);
 s8 I2C_WriteBit(u8 device_address, u8 address, u8 bitNum, u8 data);
 
+void I2C_SetHoldTime(uint32_t HoldTime);
+uint32_t I2C_GetHoldTime(void);
+
 #endif
 
 

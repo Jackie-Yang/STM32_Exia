@@ -75,168 +75,42 @@ void KS10X_Get_High(void)
 #endif
 }
 
-
-
-
-void KS10X_command(u8 command)			//发送指令
+uint8_t KS10X_command(u8 command) //发送指令
 {
-	
-	KS10X_I2C_Start( );
-
-	KS10X_I2C_Send_Data(KS10X_ADDRESS);
-	KS10X_I2C_Send_Data(0x02);
-	KS10X_I2C_Send_Data(command);
-
-	KS10X_I2C_Stop( );
-
-
-
+	uint8_t ret = 0;
+	uint32_t OldHoldTime = I2C_GetHoldTime();
+	I2C_SetHoldTime(5);
+	ret = I2C_SendByte(KS10X_ADDRESS, 0x02, command);
+	I2C_SetHoldTime(OldHoldTime);
+	return ret;
 }
 
 u16 KS10X_Get_Result(void)			   //获取结果(时序2)
 {
 	u16 data;
-	KS10X_I2C_Start( );
-	KS10X_I2C_Send_Data(KS10X_ADDRESS+1);
+
+	uint32_t OldHoldTime = I2C_GetHoldTime();
+	I2C_SetHoldTime(5);
+
+	I2C_Start();
+	I2C_Send_Data(KS10X_ADDRESS+1);
 
 	delay_us(62);
 
-	data = KS10X_I2C_Read_Data(NACK) ;
+	data = I2C_Read_Data(NACK) ;
 	data <<= 8;
-	
-	KS10X_I2C_Start( );
-	KS10X_I2C_Send_Data(KS10X_ADDRESS+1);
+
+	I2C_Start();
+	I2C_Send_Data(KS10X_ADDRESS+1);
 
 	delay_us(62);
 
-	data |= KS10X_I2C_Read_Data(NACK) ;
+	data |= I2C_Read_Data(NACK) ;
 
-	KS10X_I2C_Stop( );
+	I2C_Stop();
 
+	I2C_SetHoldTime(OldHoldTime);
 	return data;
-
 }
 
-/***********为KS10X的I2C速度制定的I2C函数**************/
-
-
-/************************发送IIC开始信号*************************/ 
-void KS10X_I2C_Start(void)
-{         
-	I2C_SDA=1;	  	  
-	I2C_SCL=1;
-	delay_us(5);
- 	I2C_SDA=0;            //I2C时钟线SCL为高时拉低I2C数据线SDA，发送开始信号 
-	delay_us(5);
-	I2C_SCL=0;            //拉低I2C时钟线，准备数据传输 
-}	 
-
- 
-/*************************发送I2C结束信号**************************/
-void KS10X_I2C_Stop(void)
-{          
-	I2C_SCL=0;
-	I2C_SDA=0;         
- 	delay_us(5);
-	I2C_SCL=1; 
-	I2C_SDA=1;    	     //I2C时钟线SCL为高时拉高I2C数据线SDA，发送结束信号 
-	delay_us(5);	
-	I2C_SCL=0;						   	
-}
-
-/*****************等待应答信号，返回1即收到应答，0即没有收到************/ 
-u8 KS10X_I2C_Wait_Ack(void)
-{
-	u8 WaitTime=0;
-	SDA_IN();                      //SDA设置为输入  
-	I2C_SDA=1;					   //上拉电阻
-////	delay_us(1);	   
-	I2C_SCL=1;
-////	delay_us(1);	 
-	while(READ_SDA)
-	{
-		if(WaitTime++>250)
-		{
-			I2C_SCL = 0;
-			SDA_OUT(); 
-			I2C_Stop();	
-			return 0;
-		}
-	}
-	I2C_SCL=0;                     //时钟输出0 	
-	SDA_OUT();    
-	return 1;  
-}
-
-/********************产生ACK应答*****************/
-void KS10X_I2C_Ack(void)		  //应答信号位SCL为高电平时，SDA为低电平
-{
-	I2C_SCL=0;
-	I2C_SDA=0;
-	I2C_SCL=1;
-	delay_us(5);
-	I2C_SCL=0;
-	delay_us(5);
-}
-/****************************不产生ACK应答**************************/		    
-void KS10X_I2C_NAck(void)		//非应答信号位SCL为高电平时，SDA为高电平
-{
-	I2C_SCL=0;
-	I2C_SDA=1;
-	I2C_SCL=1;
-	delay_us(5);
-	I2C_SCL=0;
-	delay_us(5);
-}	
-
-				 				     
-/*****************************I2C发送一个字节数据***************************/
-//返回1,从机有应答;0，无应答		  
-u8 KS10X_I2C_Send_Data(u8 data)
-{                        
-    u8 i;   	    
-    I2C_SCL=0;                       //拉低时钟开始数据传输
-    for(i = 0;i < 8; i++)
-    {              
-        I2C_SDA=data >> 7;           //(data&0x80)>>7;		//从最高位开始取
-        data<<=1; 	  
-		//delay_us(1);                 
-		I2C_SCL=1;
-		delay_us(5); 
-		I2C_SCL=0;	
-		delay_us(5);
-    }	
-	KS10X_I2C_Wait_Ack( ); 
-	return 1; 
-} 	   
-
-
- 
-/******************************读1个字节*****************************/
-//参数ack=1时，发送ACK，ack=0，发送nACK   
-u8 KS10X_I2C_Read_Data(u8 ack)
-{
-	unsigned char i,receive=0;
-	SDA_IN();                        //SDA设置为输入
-    for(i=0;i<8;i++ )                //高位先发送 
-	{
-        I2C_SCL=0; 
-        delay_us(5);
-		I2C_SCL=1;
-        receive<<=1;
-        if(READ_SDA)
-		{
-			receive++;   	//读到该位为1，+1（即置1）
-		}
-		delay_us(5); 
-    }
-	I2C_SCL = 0;
-	SDA_OUT(); 			 
-    if (ack)
-		KS10X_I2C_Ack();                   //发送ACK
-    else
-		KS10X_I2C_NAck();                  //发送nACK
-           
-    return receive;
-} 
 
