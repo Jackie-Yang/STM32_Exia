@@ -16,14 +16,18 @@
 #define ON(led)				digitalHi(GPIOC, led)
 #define OFF(led)			digitalLo(GPIOC, led)
 
-#define BLINK_REPEAT_START      -1
-#define BLINK_REPEAT            -2
-#define BLINK_LOOP              -3
-#define BLINK_STOP              -4
+typedef enum {
+    BLINK_OFF = 0,
+    BLINK_ON = 1,
+    BLINK_REPEAT_START = -1,
+    BLINK_REPEAT = -2,
+    BLINK_LOOP = -3,
+    BLINK_STOP = -4,
+} BlinkStatus;
 
 typedef const struct _LED_BLINK_MODE_
 {
-    int8_t Status;
+    BlinkStatus Status;
     uint32_t Time;
 } LED_BlinkMode, *pLED_BlinkMode;
 

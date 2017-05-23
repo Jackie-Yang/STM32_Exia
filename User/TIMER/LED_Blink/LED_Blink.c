@@ -8,7 +8,7 @@
 
 //使用LED_BlinkMode数组进行配置
 //每个数组元素又包含2个元素
-//{1, xxx}或者{0, xxx}          表示亮、灭xxx毫秒
+//{BLINK_ON, xxx}或者{BLINK_OFF, xxx}          表示亮、灭xxx毫秒
 //{BLINK_REPEAT, xxx}         表示重复前面的闪烁xxx次，如果要闪烁5次则为5，重复至少1次，设置为0也会闪烁一次
 //{BLINK_REPEAT_START, xxx}   表示重复闪烁的起始位置，如果不指定则从0开始,xxx无作用
 
@@ -22,61 +22,61 @@
 
 //初始化中
 LED_BlinkMode Blink_Init[] = {
-    {1, 200},
-    {0, 200},
+    {BLINK_ON, 200},
+    {BLINK_OFF, 200},
     {BLINK_REPEAT, 10},
-    {0, 1000},
+    {BLINK_OFF, 1000},
     {BLINK_LOOP, 0}};
 
 //警告，普通错误
 LED_BlinkMode Blink_WARNING[] = {
-    {1, 100},
-    {0, 100},
+    {BLINK_ON, 100},
+    {BLINK_OFF, 100},
     {BLINK_REPEAT, 3},
-    {0, 1000},
+    {BLINK_OFF, 1000},
     {BLINK_LOOP, 0}};
 //闪一次，普通错误
 LED_BlinkMode Blink_WARNING_ONCE[] = {
-    {1, 100},
-    {0, 100},
+    {BLINK_ON, 100},
+    {BLINK_OFF, 100},
     {BLINK_REPEAT, 3},
-    {0, 1000},
+    {BLINK_OFF, 1000},
     {BLINK_STOP, 0}};
 //严重错误
 LED_BlinkMode Blink_ERROR[] = {
-    {1, 50},
-    {0, 50},
+    {BLINK_ON, 50},
+    {BLINK_OFF, 50},
     {BLINK_REPEAT, 3},
-    {0, 500},
+    {BLINK_OFF, 500},
     {BLINK_LOOP, 0}};
 //闪一次，严重错误
 LED_BlinkMode Blink_ERROR_ONCE[] = {
-    {1, 50},
-    {0, 50},
+    {BLINK_ON, 50},
+    {BLINK_OFF, 50},
     {BLINK_REPEAT, 3},
-    {0, 500},
+    {BLINK_OFF, 500},
     {BLINK_STOP, 0}};
 
 //蓝牙连接
 LED_BlinkMode Blink_BT_Connect[] = {
-    {1, 300},
-    {0, 300},
+    {BLINK_ON, 300},
+    {BLINK_OFF, 300},
     {BLINK_REPEAT, 2},
-    {0, 2000},
+    {BLINK_OFF, 2000},
     {BLINK_LOOP, 0}};
 
 LED_BlinkMode Blink_ReceiveOrder[] = {
-    {1, 100},
-    {0, 100},
+    {BLINK_ON, 100},
+    {BLINK_OFF, 100},
     {BLINK_REPEAT, 2},
-    {0, 1000},
+    {BLINK_OFF, 1000},
     {BLINK_STOP, 0}};
 
 LED_BlinkMode Blink_ErrorOrder[] = {
-    {1, 50},
-    {0, 50},
+    {BLINK_ON, 50},
+    {BLINK_OFF, 50},
     {BLINK_REPEAT, 2},
-    {0, 1000},
+    {BLINK_OFF, 1000},
     {BLINK_STOP, 0}};
 
 uint32_t BlinkIndex = 0;        //计数
@@ -193,11 +193,11 @@ void TIM1_UP_IRQHandler(void) //TIM1中断
             BlinkIndex = 0;
         }
 
-        if ((pCurBlinkMode + BlinkIndex)->Status == 1) //Set First Status
+        if ((pCurBlinkMode + BlinkIndex)->Status == BLINK_ON) //Set First Status
         {
             LED_ON;
         }
-        else if ((pCurBlinkMode + BlinkIndex)->Status == 0)
+        else if ((pCurBlinkMode + BlinkIndex)->Status == BLINK_OFF)
         {
             LED_OFF;
         }
