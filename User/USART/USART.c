@@ -94,417 +94,421 @@ void USART1_sendStr(u8 *data)
 /**********************串口接收中断*******************************************/
 void USART1_IRQHandler()
 {
+	
 	if(USART_GetITStatus(USART1,USART_IT_RXNE))  	//读取接收中断标志位USART_IT_RXNE 
 	{
-		USART_ClearITPendingBit(USART1,USART_IT_RXNE);	//清除中断标志位	
-		ReceiveOrder = USART_ReceiveData(USART1);	//接收字符读取
-		switch(ReceiveOrder)						//做出相应操作
+		while (USART_GetFlagStatus(USART1, USART_FLAG_RXNE))	//直到读取完毕
 		{
-			case COMMAND_MPU6050_SETOFFSET:
+			ReceiveOrder = USART_ReceiveData(USART1);	//接收字符读取
+			switch(ReceiveOrder)						//做出相应操作
 			{
-				// MPU6050_SetOffset(stQuadrotor_State.s16_Accel, stQuadrotor_State.s16_Gyro);
-				// init_quaternion();
-				#if DMP_ENABLE
-				MPU6050_DMP_SelfTest();
-				#else
-				MPU6050_SetOffset();
-				#endif
-				break;
-			}
-			case COMMAND_SET_HIGH_REF:
-			{
-				MS5611_SetReference();
-				High.Accel_last = 0;
-				High.Accel_cur = 0;
-				High.speed_last = 0;
-				High.speed_cur = 0;
-				High.high_last = 0;
-				High.high_cur = 0;
-				break;
-			}
-			case COMMAND_SET_THRO:
-			{
-//				u8 i;
-				while(!USART_GetFlagStatus(USART1,USART_FLAG_RXNE));  //等待油门信号
-
-//				for(i = 0;i < 4; i++)
-//				{
-//					set_motorPWM(i + 1,receive_THRO);
-//				}
-
-				if (stQuadrotor_State.u16_Rudd == 0) //没信号时初始化其它通道
+				case COMMAND_MPU6050_SETOFFSET:
 				{
-					stQuadrotor_State.u16_Rudd = 1500;
+					// MPU6050_SetOffset(stQuadrotor_State.s16_Accel, stQuadrotor_State.s16_Gyro);
+					// init_quaternion();
+					#if DMP_ENABLE
+					MPU6050_DMP_SelfTest();
+					#else
+					MPU6050_SetOffset();
+					#endif
+					break;
 				}
-				if(stQuadrotor_State.u16_Aile == 0)
+				case COMMAND_SET_HIGH_REF:
 				{
+					MS5611_SetReference();
+					High.Accel_last = 0;
+					High.Accel_cur = 0;
+					High.speed_last = 0;
+					High.speed_cur = 0;
+					High.high_last = 0;
+					High.high_cur = 0;
+					break;
+				}
+				case COMMAND_SET_THRO:
+				{
+	//				u8 i;
+					while(!USART_GetFlagStatus(USART1,USART_FLAG_RXNE));  //等待油门信号
+
+	//				for(i = 0;i < 4; i++)
+	//				{
+	//					set_motorPWM(i + 1,receive_THRO);
+	//				}
+
+					if (stQuadrotor_State.u16_Rudd == 0) //没信号时初始化其它通道
+					{
+						stQuadrotor_State.u16_Rudd = 1500;
+					}
+					if(stQuadrotor_State.u16_Aile == 0)
+					{
+						stQuadrotor_State.u16_Aile = 1500;
+					}
+
+					if(stQuadrotor_State.u16_Elev == 0)
+					{
+						stQuadrotor_State.u16_Elev = 1500;
+					}
+					stQuadrotor_State.u16_Thro = 1100 + USART_ReceiveData(USART1) * 8;
+					//DMA_Buff_In_16(REC_THRO,THRO_INDEX);
+
+					//USART_ClearFlag(USART1,USART_FLAG_RXNE);
+					break;
+				}
+
+				case COMMAND_SET_RUDD:
+				{
+	//				u8 i;
+					while(!USART_GetFlagStatus(USART1,USART_FLAG_RXNE));  //等待方向舵信号
+
+	//				for(i = 0;i < 4; i++)
+	//				{
+	//					set_motorPWM(i + 1,receive_THRO);
+	//				}
+
+					stQuadrotor_State.u16_Rudd = 1100 + USART_ReceiveData(USART1) * 8;
+					if (stQuadrotor_State.u16_Aile == 0) 	//没信号时初始化其它通道
+					{
+						stQuadrotor_State.u16_Aile = 1500;
+					}
+
+					if (stQuadrotor_State.u16_Elev == 0)
+					{
+						stQuadrotor_State.u16_Elev = 1500;
+					}
+
+					if (stQuadrotor_State.u16_Thro == 0) 
+					{
+						stQuadrotor_State.u16_Thro = 1100;
+					}
+					//DMA_Buff_In_16(REC_THRO,THRO_INDEX);
+
+					//USART_ClearFlag(USART1,USART_FLAG_RXNE);
+					break;
+				}
+
+				case COMMAND_SET_ELEV:
+				{
+	//				u8 i;
+					while(!USART_GetFlagStatus(USART1,USART_FLAG_RXNE));  //等待升降舵信号
+
+	//				for(i = 0;i < 4; i++)
+	//				{
+	//					set_motorPWM(i + 1,receive_THRO);
+	//				}
+
+					stQuadrotor_State.u16_Elev = 1100 + USART_ReceiveData(USART1) * 8;
+					if (stQuadrotor_State.u16_Aile == 0) //没信号时初始化其它通道
+					{
+						stQuadrotor_State.u16_Aile = 1500;
+					}
+
+					if (stQuadrotor_State.u16_Rudd == 0)
+					{
+						stQuadrotor_State.u16_Rudd = 1500;
+					}
+
+					if (stQuadrotor_State.u16_Thro == 0)
+					{
+						stQuadrotor_State.u16_Thro = 1100;
+					}
+					//DMA_Buff_In_16(REC_THRO,THRO_INDEX);
+
+					//USART_ClearFlag(USART1,USART_FLAG_RXNE);
+					break;
+				}
+
+				case COMMAND_SET_AILE:
+				{
+	//				u8 i;
+					while(!USART_GetFlagStatus(USART1,USART_FLAG_RXNE));  //等待副翼信号
+
+	//				for(i = 0;i < 4; i++)
+	//				{
+	//					set_motorPWM(i + 1,receive_THRO);
+	//				}
+
+					stQuadrotor_State.u16_Aile = 1100 + USART_ReceiveData(USART1) * 8;
+					if (stQuadrotor_State.u16_Elev == 0) //没信号时初始化其它通道
+					{
+						stQuadrotor_State.u16_Elev = 1500;
+					}
+
+					if (stQuadrotor_State.u16_Rudd == 0)
+					{
+						stQuadrotor_State.u16_Rudd = 1500;
+					}
+
+					if (stQuadrotor_State.u16_Thro == 0)
+					{
+						stQuadrotor_State.u16_Thro = 1100;
+					}
+					//DMA_Buff_In_16(REC_THRO,THRO_INDEX);
+
+					//USART_ClearFlag(USART1,USART_FLAG_RXNE);
+					break;
+				}
+
+				case COMMAND_STOP:
+				{
+					stQuadrotor_State.u16_Thro = 1100;
 					stQuadrotor_State.u16_Aile = 1500;
-				}
-
-				if(stQuadrotor_State.u16_Elev == 0)
-				{
 					stQuadrotor_State.u16_Elev = 1500;
-				}
-				stQuadrotor_State.u16_Thro = 1100 + USART_ReceiveData(USART1) * 8;
-				//DMA_Buff_In_16(REC_THRO,THRO_INDEX);
-
-				//USART_ClearFlag(USART1,USART_FLAG_RXNE);
-				break;
-			}
-
-			case COMMAND_SET_RUDD:
-			{
-//				u8 i;
-				while(!USART_GetFlagStatus(USART1,USART_FLAG_RXNE));  //等待方向舵信号
-
-//				for(i = 0;i < 4; i++)
-//				{
-//					set_motorPWM(i + 1,receive_THRO);
-//				}
-
-				stQuadrotor_State.u16_Rudd = 1100 + USART_ReceiveData(USART1) * 8;
-				if (stQuadrotor_State.u16_Aile == 0) 	//没信号时初始化其它通道
-				{
-					stQuadrotor_State.u16_Aile = 1500;
-				}
-
-				if (stQuadrotor_State.u16_Elev == 0)
-				{
-					stQuadrotor_State.u16_Elev = 1500;
-				}
-
-				if (stQuadrotor_State.u16_Thro == 0) 
-				{
-					stQuadrotor_State.u16_Thro = 1100;
-				}
-				//DMA_Buff_In_16(REC_THRO,THRO_INDEX);
-
-				//USART_ClearFlag(USART1,USART_FLAG_RXNE);
-				break;
-			}
-
-			case COMMAND_SET_ELEV:
-			{
-//				u8 i;
-				while(!USART_GetFlagStatus(USART1,USART_FLAG_RXNE));  //等待升降舵信号
-
-//				for(i = 0;i < 4; i++)
-//				{
-//					set_motorPWM(i + 1,receive_THRO);
-//				}
-
-				stQuadrotor_State.u16_Elev = 1100 + USART_ReceiveData(USART1) * 8;
-				if (stQuadrotor_State.u16_Aile == 0) //没信号时初始化其它通道
-				{
-					stQuadrotor_State.u16_Aile = 1500;
-				}
-
-				if (stQuadrotor_State.u16_Rudd == 0)
-				{
 					stQuadrotor_State.u16_Rudd = 1500;
+					set_motorPWM(1,stQuadrotor_State.u16_Thro);
+					set_motorPWM(2,stQuadrotor_State.u16_Thro);
+					set_motorPWM(3,stQuadrotor_State.u16_Thro);
+					set_motorPWM(4,stQuadrotor_State.u16_Thro);
+					break;
 				}
 
-				if (stQuadrotor_State.u16_Thro == 0)
+				case COMMAND_HORIZON:
 				{
-					stQuadrotor_State.u16_Thro = 1100;
-				}
-				//DMA_Buff_In_16(REC_THRO,THRO_INDEX);
-
-				//USART_ClearFlag(USART1,USART_FLAG_RXNE);
-				break;
-			}
-
-			case COMMAND_SET_AILE:
-			{
-//				u8 i;
-				while(!USART_GetFlagStatus(USART1,USART_FLAG_RXNE));  //等待副翼信号
-
-//				for(i = 0;i < 4; i++)
-//				{
-//					set_motorPWM(i + 1,receive_THRO);
-//				}
-
-				stQuadrotor_State.u16_Aile = 1100 + USART_ReceiveData(USART1) * 8;
-				if (stQuadrotor_State.u16_Elev == 0) //没信号时初始化其它通道
-				{
+					if(!stQuadrotor_State.u16_Thro)
+					{
+						stQuadrotor_State.u16_Thro = 1100;
+					}
+					stQuadrotor_State.u16_Aile = 1500;
 					stQuadrotor_State.u16_Elev = 1500;
-				}
-
-				if (stQuadrotor_State.u16_Rudd == 0)
-				{
 					stQuadrotor_State.u16_Rudd = 1500;
+					break;
 				}
 
-				if (stQuadrotor_State.u16_Thro == 0)
+
+
+				//PID整定参数输入
+				case COMMAND_ROLL_GYRO_KP:
 				{
-					stQuadrotor_State.u16_Thro = 1100;
+					u16 receive_Data = 0;
+
+					while(!USART_GetFlagStatus(USART1,USART_FLAG_RXNE)); 	//从串口读取两字节参数
+					receive_Data = USART_ReceiveData(USART1);
+					while(!USART_GetFlagStatus(USART1,USART_FLAG_RXNE)); 
+					receive_Data |= USART_ReceiveData(USART1) << 8;
+
+				//	DMA_Buff_In_16(receive_Data,ROLL_GYRO_KP_INDEX);		//写入DMA回传到上位机
+					stQuadrotor_State.u16_ROLL_G_Kp = receive_Data;
+					EE_WriteVariable(ROLL_GYRO_KP_ADDR,receive_Data);	   //将参数储存进Flash，方便下次开机读取
+					Roll.Gyro_Kp = ((float)receive_Data) / 100.0;		   //
+					break;
 				}
-				//DMA_Buff_In_16(REC_THRO,THRO_INDEX);
-
-				//USART_ClearFlag(USART1,USART_FLAG_RXNE);
-				break;
-			}
-
-			case COMMAND_STOP:
-			{
-				stQuadrotor_State.u16_Thro = 1100;
-				stQuadrotor_State.u16_Aile = 1500;
-				stQuadrotor_State.u16_Elev = 1500;
-				stQuadrotor_State.u16_Rudd = 1500;
-				set_motorPWM(1,stQuadrotor_State.u16_Thro);
-				set_motorPWM(2,stQuadrotor_State.u16_Thro);
-				set_motorPWM(3,stQuadrotor_State.u16_Thro);
-				set_motorPWM(4,stQuadrotor_State.u16_Thro);
-				break;
-			}
-
-			case COMMAND_HORIZON:
-			{
-				if(!stQuadrotor_State.u16_Thro)
+				case COMMAND_ROLL_GYRO_KI:
 				{
-					stQuadrotor_State.u16_Thro = 1100;
+					u16 receive_Data = 0;
+
+					while(!USART_GetFlagStatus(USART1,USART_FLAG_RXNE)); 	//从串口读取两字节参数
+					receive_Data = USART_ReceiveData(USART1);
+					while(!USART_GetFlagStatus(USART1,USART_FLAG_RXNE)); 
+					receive_Data |= USART_ReceiveData(USART1) << 8;
+
+			//		DMA_Buff_In_16(receive_Data,ROLL_GYRO_KI_INDEX);		//写入DMA回传到上位机
+					stQuadrotor_State.u16_ROLL_G_Ki = receive_Data;
+					EE_WriteVariable(ROLL_GYRO_KI_ADDR,receive_Data);	   //将参数储存进Flash，方便下次开机读取
+					Roll.Gyro_Ki = ((float)receive_Data) / 100.0;		   //
+					break;
 				}
-				stQuadrotor_State.u16_Aile = 1500;
-				stQuadrotor_State.u16_Elev = 1500;
-				stQuadrotor_State.u16_Rudd = 1500;
-				break;
-			}
+				case COMMAND_ROLL_GYRO_KD:
+				{
+					u16 receive_Data = 0;
 
+					while(!USART_GetFlagStatus(USART1,USART_FLAG_RXNE)); 	//从串口读取两字节参数
+					receive_Data = USART_ReceiveData(USART1);
+					while(!USART_GetFlagStatus(USART1,USART_FLAG_RXNE)); 
+					receive_Data |= USART_ReceiveData(USART1) << 8;
 
+			//		DMA_Buff_In_16(receive_Data,ROLL_GYRO_KD_INDEX);		//写入DMA回传到上位机
+					stQuadrotor_State.u16_ROLL_G_Kd = receive_Data;
+					EE_WriteVariable(ROLL_GYRO_KD_ADDR,receive_Data);	   //将参数储存进Flash，方便下次开机读取
+					Roll.Gyro_Kd = ((float)receive_Data) / 100.0;		   //
+					break;
+				}
+				case COMMAND_ROLL_ANGLE_KP:
+				{
+					u16 receive_Data = 0;
 
-			//PID整定参数输入
-			case COMMAND_ROLL_GYRO_KP:
-			{
-				u16 receive_Data = 0;
+					while(!USART_GetFlagStatus(USART1,USART_FLAG_RXNE)); 	//从串口读取两字节参数
+					receive_Data = USART_ReceiveData(USART1);
+					while(!USART_GetFlagStatus(USART1,USART_FLAG_RXNE)); 
+					receive_Data |= USART_ReceiveData(USART1) << 8;
 
-				while(!USART_GetFlagStatus(USART1,USART_FLAG_RXNE)); 	//从串口读取两字节参数
-				receive_Data = USART_ReceiveData(USART1);
-				while(!USART_GetFlagStatus(USART1,USART_FLAG_RXNE)); 
-				receive_Data |= USART_ReceiveData(USART1) << 8;
+			//		DMA_Buff_In_16(receive_Data,ROLL_ANGLE_KP_INDEX);		//写入DMA回传到上位机
+					stQuadrotor_State.u16_ROLL_Angle_Kp = receive_Data;
+					EE_WriteVariable(ROLL_ANGLE_KP_ADDR,receive_Data);	   //将参数储存进Flash，方便下次开机读取
+					Roll.angle_Kp = ((float)receive_Data) / 100.0;		   //
+					break;
+				}
+				case COMMAND_ROLL_ANGLE_KI:
+				{
+					u16 receive_Data = 0;
 
-			//	DMA_Buff_In_16(receive_Data,ROLL_GYRO_KP_INDEX);		//写入DMA回传到上位机
-				stQuadrotor_State.u16_ROLL_G_Kp = receive_Data;
-				EE_WriteVariable(ROLL_GYRO_KP_ADDR,receive_Data);	   //将参数储存进Flash，方便下次开机读取
-				Roll.Gyro_Kp = ((float)receive_Data) / 100.0;		   //
-				break;
-			}
-			case COMMAND_ROLL_GYRO_KI:
-			{
-				u16 receive_Data = 0;
+					while(!USART_GetFlagStatus(USART1,USART_FLAG_RXNE)); 	//从串口读取两字节参数
+					receive_Data = USART_ReceiveData(USART1);
+					while(!USART_GetFlagStatus(USART1,USART_FLAG_RXNE)); 
+					receive_Data |= USART_ReceiveData(USART1) << 8;
 
-				while(!USART_GetFlagStatus(USART1,USART_FLAG_RXNE)); 	//从串口读取两字节参数
-				receive_Data = USART_ReceiveData(USART1);
-				while(!USART_GetFlagStatus(USART1,USART_FLAG_RXNE)); 
-				receive_Data |= USART_ReceiveData(USART1) << 8;
+		//			DMA_Buff_In_16(receive_Data,ROLL_ANGLE_KI_INDEX);		//写入DMA回传到上位机
+					stQuadrotor_State.u16_ROLL_Angle_Ki = receive_Data;
+					EE_WriteVariable(ROLL_ANGLE_KI_ADDR,receive_Data);	   //将参数储存进Flash，方便下次开机读取
+					Roll.angle_Ki = ((float)receive_Data) / 100.0;		   //
+					break;
+				}
+				case COMMAND_ROLL_ANGLE_KD:
+				{
+					u16 receive_Data = 0;
 
-		//		DMA_Buff_In_16(receive_Data,ROLL_GYRO_KI_INDEX);		//写入DMA回传到上位机
-				stQuadrotor_State.u16_ROLL_G_Ki = receive_Data;
-				EE_WriteVariable(ROLL_GYRO_KI_ADDR,receive_Data);	   //将参数储存进Flash，方便下次开机读取
-				Roll.Gyro_Ki = ((float)receive_Data) / 100.0;		   //
-				break;
-			}
-			case COMMAND_ROLL_GYRO_KD:
-			{
-				u16 receive_Data = 0;
+					while(!USART_GetFlagStatus(USART1,USART_FLAG_RXNE)); 	//从串口读取两字节参数
+					receive_Data = USART_ReceiveData(USART1);
+					while(!USART_GetFlagStatus(USART1,USART_FLAG_RXNE)); 
+					receive_Data |= USART_ReceiveData(USART1) << 8;
 
-				while(!USART_GetFlagStatus(USART1,USART_FLAG_RXNE)); 	//从串口读取两字节参数
-				receive_Data = USART_ReceiveData(USART1);
-				while(!USART_GetFlagStatus(USART1,USART_FLAG_RXNE)); 
-				receive_Data |= USART_ReceiveData(USART1) << 8;
+			//		DMA_Buff_In_16(receive_Data,ROLL_ANGLE_KD_INDEX);		//写入DMA回传到上位机
+					stQuadrotor_State.u16_ROLL_Angle_Kd = receive_Data;
+					EE_WriteVariable(ROLL_ANGLE_KD_ADDR,receive_Data);	   //将参数储存进Flash，方便下次开机读取
+					Roll.angle_Kd = ((float)receive_Data) / 100.0;		   //
+					break;
+				}
+				case COMMAND_PITCH_GYRO_KP:
+				{
+					u16 receive_Data = 0;
 
-		//		DMA_Buff_In_16(receive_Data,ROLL_GYRO_KD_INDEX);		//写入DMA回传到上位机
-				stQuadrotor_State.u16_ROLL_G_Kd = receive_Data;
-				EE_WriteVariable(ROLL_GYRO_KD_ADDR,receive_Data);	   //将参数储存进Flash，方便下次开机读取
-				Roll.Gyro_Kd = ((float)receive_Data) / 100.0;		   //
-				break;
-			}
-			case COMMAND_ROLL_ANGLE_KP:
-			{
-				u16 receive_Data = 0;
+					while(!USART_GetFlagStatus(USART1,USART_FLAG_RXNE)); 	//从串口读取两字节参数
+					receive_Data = USART_ReceiveData(USART1);
+					while(!USART_GetFlagStatus(USART1,USART_FLAG_RXNE)); 
+					receive_Data |= USART_ReceiveData(USART1) << 8;
 
-				while(!USART_GetFlagStatus(USART1,USART_FLAG_RXNE)); 	//从串口读取两字节参数
-				receive_Data = USART_ReceiveData(USART1);
-				while(!USART_GetFlagStatus(USART1,USART_FLAG_RXNE)); 
-				receive_Data |= USART_ReceiveData(USART1) << 8;
+			//		DMA_Buff_In_16(receive_Data,PITCH_GYRO_KP_INDEX);		//写入DMA回传到上位机
+					stQuadrotor_State.u16_PITCH_G_Kp = receive_Data;
+					EE_WriteVariable(PITCH_GYRO_KP_ADDR,receive_Data);	   //将参数储存进Flash，方便下次开机读取
+					Pitch.Gyro_Kp = ((float)receive_Data) / 100.0;		   //
+					break;
+				}
+				case COMMAND_PITCH_GYRO_KI:
+				{
+					u16 receive_Data = 0;
 
-		//		DMA_Buff_In_16(receive_Data,ROLL_ANGLE_KP_INDEX);		//写入DMA回传到上位机
-				stQuadrotor_State.u16_ROLL_Angle_Kp = receive_Data;
-				EE_WriteVariable(ROLL_ANGLE_KP_ADDR,receive_Data);	   //将参数储存进Flash，方便下次开机读取
-				Roll.angle_Kp = ((float)receive_Data) / 100.0;		   //
-				break;
-			}
-			case COMMAND_ROLL_ANGLE_KI:
-			{
-				u16 receive_Data = 0;
+					while(!USART_GetFlagStatus(USART1,USART_FLAG_RXNE)); 	//从串口读取两字节参数
+					receive_Data = USART_ReceiveData(USART1);
+					while(!USART_GetFlagStatus(USART1,USART_FLAG_RXNE)); 
+					receive_Data |= USART_ReceiveData(USART1) << 8;
 
-				while(!USART_GetFlagStatus(USART1,USART_FLAG_RXNE)); 	//从串口读取两字节参数
-				receive_Data = USART_ReceiveData(USART1);
-				while(!USART_GetFlagStatus(USART1,USART_FLAG_RXNE)); 
-				receive_Data |= USART_ReceiveData(USART1) << 8;
+		//			DMA_Buff_In_16(receive_Data,PITCH_GYRO_KI_INDEX);		//写入DMA回传到上位机
+					stQuadrotor_State.u16_PITCH_G_Ki = receive_Data;
+					EE_WriteVariable(PITCH_GYRO_KI_ADDR,receive_Data);	   //将参数储存进Flash，方便下次开机读取
+					Pitch.Gyro_Ki = ((float)receive_Data) / 100.0;		   //
+					break;
+				}
+				case COMMAND_PITCH_GYRO_KD:
+				{
+					u16 receive_Data = 0;
 
-	//			DMA_Buff_In_16(receive_Data,ROLL_ANGLE_KI_INDEX);		//写入DMA回传到上位机
-				stQuadrotor_State.u16_ROLL_Angle_Ki = receive_Data;
-				EE_WriteVariable(ROLL_ANGLE_KI_ADDR,receive_Data);	   //将参数储存进Flash，方便下次开机读取
-				Roll.angle_Ki = ((float)receive_Data) / 100.0;		   //
-				break;
-			}
-			case COMMAND_ROLL_ANGLE_KD:
-			{
-				u16 receive_Data = 0;
+					while(!USART_GetFlagStatus(USART1,USART_FLAG_RXNE)); 	//从串口读取两字节参数
+					receive_Data = USART_ReceiveData(USART1);
+					while(!USART_GetFlagStatus(USART1,USART_FLAG_RXNE)); 
+					receive_Data |= USART_ReceiveData(USART1) << 8;
 
-				while(!USART_GetFlagStatus(USART1,USART_FLAG_RXNE)); 	//从串口读取两字节参数
-				receive_Data = USART_ReceiveData(USART1);
-				while(!USART_GetFlagStatus(USART1,USART_FLAG_RXNE)); 
-				receive_Data |= USART_ReceiveData(USART1) << 8;
+		//			DMA_Buff_In_16(receive_Data,PITCH_GYRO_KD_INDEX);		//写入DMA回传到上位机
+					stQuadrotor_State.u16_PITCH_G_Kd = receive_Data;
+					EE_WriteVariable(PITCH_GYRO_KD_ADDR,receive_Data);	   //将参数储存进Flash，方便下次开机读取
+					Pitch.Gyro_Kd = ((float)receive_Data) / 100.0;		   //
+					break;
+				}
+				case COMMAND_PITCH_ANGLE_KP:
+				{
+					u16 receive_Data = 0;
 
-		//		DMA_Buff_In_16(receive_Data,ROLL_ANGLE_KD_INDEX);		//写入DMA回传到上位机
-				stQuadrotor_State.u16_ROLL_Angle_Kd = receive_Data;
-				EE_WriteVariable(ROLL_ANGLE_KD_ADDR,receive_Data);	   //将参数储存进Flash，方便下次开机读取
-				Roll.angle_Kd = ((float)receive_Data) / 100.0;		   //
-				break;
-			}
-			case COMMAND_PITCH_GYRO_KP:
-			{
-				u16 receive_Data = 0;
+					while(!USART_GetFlagStatus(USART1,USART_FLAG_RXNE)); 	//从串口读取两字节参数
+					receive_Data = USART_ReceiveData(USART1);
+					while(!USART_GetFlagStatus(USART1,USART_FLAG_RXNE)); 
+					receive_Data |= USART_ReceiveData(USART1) << 8;
 
-				while(!USART_GetFlagStatus(USART1,USART_FLAG_RXNE)); 	//从串口读取两字节参数
-				receive_Data = USART_ReceiveData(USART1);
-				while(!USART_GetFlagStatus(USART1,USART_FLAG_RXNE)); 
-				receive_Data |= USART_ReceiveData(USART1) << 8;
+					//DMA_Buff_In_16(receive_Data,PITCH_ANGLE_KP_INDEX);		//写入DMA回传到上位机
+					stQuadrotor_State.u16_PITCH_Angle_Kp = receive_Data;
+					EE_WriteVariable(PITCH_ANGLE_KP_ADDR,receive_Data);	   //将参数储存进Flash，方便下次开机读取
+					Pitch.angle_Kp = ((float)receive_Data) / 100.0;		   //
+					break;
+				}
+				case COMMAND_PITCH_ANGLE_KI:
+				{
+					u16 receive_Data = 0;
 
-		//		DMA_Buff_In_16(receive_Data,PITCH_GYRO_KP_INDEX);		//写入DMA回传到上位机
-				stQuadrotor_State.u16_PITCH_G_Kp = receive_Data;
-				EE_WriteVariable(PITCH_GYRO_KP_ADDR,receive_Data);	   //将参数储存进Flash，方便下次开机读取
-				Pitch.Gyro_Kp = ((float)receive_Data) / 100.0;		   //
-				break;
-			}
-			case COMMAND_PITCH_GYRO_KI:
-			{
-				u16 receive_Data = 0;
+					while(!USART_GetFlagStatus(USART1,USART_FLAG_RXNE)); 	//从串口读取两字节参数
+					receive_Data = USART_ReceiveData(USART1);
+					while(!USART_GetFlagStatus(USART1,USART_FLAG_RXNE)); 
+					receive_Data |= USART_ReceiveData(USART1) << 8;
 
-				while(!USART_GetFlagStatus(USART1,USART_FLAG_RXNE)); 	//从串口读取两字节参数
-				receive_Data = USART_ReceiveData(USART1);
-				while(!USART_GetFlagStatus(USART1,USART_FLAG_RXNE)); 
-				receive_Data |= USART_ReceiveData(USART1) << 8;
+				//	DMA_Buff_In_16(receive_Data,PITCH_ANGLE_KI_INDEX);		//写入DMA回传到上位机
+					stQuadrotor_State.u16_PITCH_Angle_Ki = receive_Data;
+					EE_WriteVariable(PITCH_ANGLE_KI_ADDR,receive_Data);	   //将参数储存进Flash，方便下次开机读取
+					Pitch.angle_Ki = ((float)receive_Data) / 100.0;		   //
+					break;
+				}
+				case COMMAND_PITCH_ANGLE_KD:
+				{
+					u16 receive_Data = 0;
 
-	//			DMA_Buff_In_16(receive_Data,PITCH_GYRO_KI_INDEX);		//写入DMA回传到上位机
-				stQuadrotor_State.u16_PITCH_G_Ki = receive_Data;
-				EE_WriteVariable(PITCH_GYRO_KI_ADDR,receive_Data);	   //将参数储存进Flash，方便下次开机读取
-				Pitch.Gyro_Ki = ((float)receive_Data) / 100.0;		   //
-				break;
-			}
-			case COMMAND_PITCH_GYRO_KD:
-			{
-				u16 receive_Data = 0;
+					while(!USART_GetFlagStatus(USART1,USART_FLAG_RXNE)); 	//从串口读取两字节参数
+					receive_Data = USART_ReceiveData(USART1);
+					while(!USART_GetFlagStatus(USART1,USART_FLAG_RXNE)); 
+					receive_Data |= USART_ReceiveData(USART1) << 8;
 
-				while(!USART_GetFlagStatus(USART1,USART_FLAG_RXNE)); 	//从串口读取两字节参数
-				receive_Data = USART_ReceiveData(USART1);
-				while(!USART_GetFlagStatus(USART1,USART_FLAG_RXNE)); 
-				receive_Data |= USART_ReceiveData(USART1) << 8;
+			//		DMA_Buff_In_16(receive_Data,PITCH_ANGLE_KD_INDEX);		//写入DMA回传到上位机
+					stQuadrotor_State.u16_PITCH_Angle_Kd = receive_Data;
+					EE_WriteVariable(PITCH_ANGLE_KD_ADDR,receive_Data);	   //将参数储存进Flash，方便下次开机读取
+					Pitch.angle_Kd = ((float)receive_Data) / 100.0;		   //
+					break;
+				}
+				case COMMAND_YAW_GYRO_KP:
+				{
+					u16 receive_Data = 0;
 
-	//			DMA_Buff_In_16(receive_Data,PITCH_GYRO_KD_INDEX);		//写入DMA回传到上位机
-				stQuadrotor_State.u16_PITCH_G_Kd = receive_Data;
-				EE_WriteVariable(PITCH_GYRO_KD_ADDR,receive_Data);	   //将参数储存进Flash，方便下次开机读取
-				Pitch.Gyro_Kd = ((float)receive_Data) / 100.0;		   //
-				break;
-			}
-			case COMMAND_PITCH_ANGLE_KP:
-			{
-				u16 receive_Data = 0;
+					while(!USART_GetFlagStatus(USART1,USART_FLAG_RXNE)); 	//从串口读取两字节参数
+					receive_Data = USART_ReceiveData(USART1);
+					while(!USART_GetFlagStatus(USART1,USART_FLAG_RXNE)); 
+					receive_Data |= USART_ReceiveData(USART1) << 8;
 
-				while(!USART_GetFlagStatus(USART1,USART_FLAG_RXNE)); 	//从串口读取两字节参数
-				receive_Data = USART_ReceiveData(USART1);
-				while(!USART_GetFlagStatus(USART1,USART_FLAG_RXNE)); 
-				receive_Data |= USART_ReceiveData(USART1) << 8;
+			//		DMA_Buff_In_16(receive_Data,YAW_GYRO_KP_INDEX);		//写入DMA回传到上位机
+					stQuadrotor_State.u16_YAW_G_Kp = receive_Data;
+					EE_WriteVariable(YAW_GYRO_KP_ADDR,receive_Data);	   //将参数储存进Flash，方便下次开机读取
+					Yaw.Gyro_Kp = ((float)receive_Data) / 100.0;		   //
+					break;
+				}
+				case COMMAND_YAW_GYRO_KI:
+				{
+					u16 receive_Data = 0;
 
-				//DMA_Buff_In_16(receive_Data,PITCH_ANGLE_KP_INDEX);		//写入DMA回传到上位机
-				stQuadrotor_State.u16_PITCH_Angle_Kp = receive_Data;
-				EE_WriteVariable(PITCH_ANGLE_KP_ADDR,receive_Data);	   //将参数储存进Flash，方便下次开机读取
-				Pitch.angle_Kp = ((float)receive_Data) / 100.0;		   //
-				break;
-			}
-			case COMMAND_PITCH_ANGLE_KI:
-			{
-				u16 receive_Data = 0;
+					while(!USART_GetFlagStatus(USART1,USART_FLAG_RXNE)); 	//从串口读取两字节参数
+					receive_Data = USART_ReceiveData(USART1);
+					while(!USART_GetFlagStatus(USART1,USART_FLAG_RXNE)); 
+					receive_Data |= USART_ReceiveData(USART1) << 8;
 
-				while(!USART_GetFlagStatus(USART1,USART_FLAG_RXNE)); 	//从串口读取两字节参数
-				receive_Data = USART_ReceiveData(USART1);
-				while(!USART_GetFlagStatus(USART1,USART_FLAG_RXNE)); 
-				receive_Data |= USART_ReceiveData(USART1) << 8;
+			//		DMA_Buff_In_16(receive_Data,YAW_GYRO_KI_INDEX);		//写入DMA回传到上位机
+					stQuadrotor_State.u16_YAW_G_Ki = receive_Data;
+					EE_WriteVariable(YAW_GYRO_KI_ADDR,receive_Data);	   //将参数储存进Flash，方便下次开机读取
+					Yaw.Gyro_Ki = ((float)receive_Data) / 100.0;		   //
+					break;
+				}
+				case COMMAND_YAW_GYRO_KD:
+				{
+					u16 receive_Data = 0;
 
-			//	DMA_Buff_In_16(receive_Data,PITCH_ANGLE_KI_INDEX);		//写入DMA回传到上位机
-				stQuadrotor_State.u16_PITCH_Angle_Ki = receive_Data;
-				EE_WriteVariable(PITCH_ANGLE_KI_ADDR,receive_Data);	   //将参数储存进Flash，方便下次开机读取
-				Pitch.angle_Ki = ((float)receive_Data) / 100.0;		   //
-				break;
-			}
-			case COMMAND_PITCH_ANGLE_KD:
-			{
-				u16 receive_Data = 0;
+					while(!USART_GetFlagStatus(USART1,USART_FLAG_RXNE)); 	//从串口读取两字节参数
+					receive_Data = USART_ReceiveData(USART1);
+					while(!USART_GetFlagStatus(USART1,USART_FLAG_RXNE)); 
+					receive_Data |= USART_ReceiveData(USART1) << 8;
 
-				while(!USART_GetFlagStatus(USART1,USART_FLAG_RXNE)); 	//从串口读取两字节参数
-				receive_Data = USART_ReceiveData(USART1);
-				while(!USART_GetFlagStatus(USART1,USART_FLAG_RXNE)); 
-				receive_Data |= USART_ReceiveData(USART1) << 8;
-
-		//		DMA_Buff_In_16(receive_Data,PITCH_ANGLE_KD_INDEX);		//写入DMA回传到上位机
-				stQuadrotor_State.u16_PITCH_Angle_Kd = receive_Data;
-				EE_WriteVariable(PITCH_ANGLE_KD_ADDR,receive_Data);	   //将参数储存进Flash，方便下次开机读取
-				Pitch.angle_Kd = ((float)receive_Data) / 100.0;		   //
-				break;
-			}
-			case COMMAND_YAW_GYRO_KP:
-			{
-				u16 receive_Data = 0;
-
-				while(!USART_GetFlagStatus(USART1,USART_FLAG_RXNE)); 	//从串口读取两字节参数
-				receive_Data = USART_ReceiveData(USART1);
-				while(!USART_GetFlagStatus(USART1,USART_FLAG_RXNE)); 
-				receive_Data |= USART_ReceiveData(USART1) << 8;
-
-		//		DMA_Buff_In_16(receive_Data,YAW_GYRO_KP_INDEX);		//写入DMA回传到上位机
-				stQuadrotor_State.u16_YAW_G_Kp = receive_Data;
-				EE_WriteVariable(YAW_GYRO_KP_ADDR,receive_Data);	   //将参数储存进Flash，方便下次开机读取
-				Yaw.Gyro_Kp = ((float)receive_Data) / 100.0;		   //
-				break;
-			}
-			case COMMAND_YAW_GYRO_KI:
-			{
-				u16 receive_Data = 0;
-
-				while(!USART_GetFlagStatus(USART1,USART_FLAG_RXNE)); 	//从串口读取两字节参数
-				receive_Data = USART_ReceiveData(USART1);
-				while(!USART_GetFlagStatus(USART1,USART_FLAG_RXNE)); 
-				receive_Data |= USART_ReceiveData(USART1) << 8;
-
-		//		DMA_Buff_In_16(receive_Data,YAW_GYRO_KI_INDEX);		//写入DMA回传到上位机
-				stQuadrotor_State.u16_YAW_G_Ki = receive_Data;
-				EE_WriteVariable(YAW_GYRO_KI_ADDR,receive_Data);	   //将参数储存进Flash，方便下次开机读取
-				Yaw.Gyro_Ki = ((float)receive_Data) / 100.0;		   //
-				break;
-			}
-			case COMMAND_YAW_GYRO_KD:
-			{
-				u16 receive_Data = 0;
-
-				while(!USART_GetFlagStatus(USART1,USART_FLAG_RXNE)); 	//从串口读取两字节参数
-				receive_Data = USART_ReceiveData(USART1);
-				while(!USART_GetFlagStatus(USART1,USART_FLAG_RXNE)); 
-				receive_Data |= USART_ReceiveData(USART1) << 8;
-
-		//		DMA_Buff_In_16(receive_Data,YAW_GYRO_KD_INDEX);		//写入DMA回传到上位机
-				stQuadrotor_State.u16_YAW_G_Kd = receive_Data;
-				EE_WriteVariable(YAW_GYRO_KD_ADDR,receive_Data);	   //将参数储存进Flash，方便下次开机读取
-				Yaw.Gyro_Kd = ((float)receive_Data) / 100.0;		   //
-				break;
-			}
-			default:
-			{
-				StartBlinkNow(Blink_ErrorOrder);
-				return;
+			//		DMA_Buff_In_16(receive_Data,YAW_GYRO_KD_INDEX);		//写入DMA回传到上位机
+					stQuadrotor_State.u16_YAW_G_Kd = receive_Data;
+					EE_WriteVariable(YAW_GYRO_KD_ADDR,receive_Data);	   //将参数储存进Flash，方便下次开机读取
+					Yaw.Gyro_Kd = ((float)receive_Data) / 100.0;		   //
+					break;
+				}
+				default:
+				{
+					StartBlinkNow(Blink_ErrorOrder);
+					return;
+				}
 			}
 		}
 		StartBlinkNow(Blink_ReceiveOrder);
+		USART_ClearITPendingBit(USART1, USART_IT_RXNE); //清除中断标志位
 	}  
 }
 
