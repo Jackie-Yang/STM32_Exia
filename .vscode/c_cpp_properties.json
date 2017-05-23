@@ -1,0 +1,56 @@
+{
+    "configurations": [
+        {
+            "name": "Mac",
+            "includePath": [
+                "${workspaceRoot}/User",
+                "${workspaceRoot}/User/Delay",
+                "${workspaceRoot}/User/DMA",
+                "${workspaceRoot}/User/EEPROOM",
+                "${workspaceRoot}/User/GY_86/HMC5883L",
+                "${workspaceRoot}/User/GY_86/MPU6050",
+                "${workspaceRoot}/User/GY_86/MPU6050/DMP",
+                "${workspaceRoot}/User/GY_86/MS5611",
+                "${workspaceRoot}/User/I2C_2.0",
+                "${workspaceRoot}/User/IMU",
+                "${workspaceRoot}/User/KS10X",
+                "${workspaceRoot}/User/PID",
+                "${workspaceRoot}/User/Setup",
+                "${workspaceRoot}/User/TIMER",
+                "${workspaceRoot}/User/TIMER/LED_Blink",
+                "${workspaceRoot}/User/TIMER/Motor",
+                "${workspaceRoot}/User/TIMER/Receiver",
+                "${workspaceRoot}/User/USART",
+                "${workspaceRoot}/Libraries/FWLIB/inc",
+                "${workspaceRoot}/Libraries/CMSIS"
+            ],
+            "defines": ["STM32F10X_HD","USE_STDPERIPH_DRIVER","__CC_ARM"],
+            "browse": {
+                "path": [
+                    "${workspaceRoot}/User",
+                    "${workspaceRoot}/User/Delay",
+                    "${workspaceRoot}/User/DMA",
+                    "${workspaceRoot}/User/EEPROOM",
+                    "${workspaceRoot}/User/GY_86/HMC5883L",
+                    "${workspaceRoot}/User/GY_86/MPU6050",
+                    "${workspaceRoot}/User/GY_86/MPU6050/DMP",
+                    "${workspaceRoot}/User/GY_86/MS5611",
+                    "${workspaceRoot}/User/I2C_2.0",
+                    "${workspaceRoot}/User/IMU",
+                    "${workspaceRoot}/User/KS10X",
+                    "${workspaceRoot}/User/PID",
+                    "${workspaceRoot}/User/Setup",
+                    "${workspaceRoot}/User/TIMER",
+                    "${workspaceRoot}/User/TIMER/LED_Blink",
+                    "${workspaceRoot}/User/TIMER/Motor",
+                    "${workspaceRoot}/User/TIMER/Receiver",
+                    "${workspaceRoot}/User/USART",
+                    "${workspaceRoot}/Libraries/FWLIB/inc",
+                    "${workspaceRoot}/Libraries/CMSIS"
+                ],
+                "limitSymbolsToIncludedHeaders": true,
+                "databaseFilename": ""
+            }
+        }
+    ]
+}
