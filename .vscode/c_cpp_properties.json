@@ -24,7 +24,7 @@
                 "${workspaceRoot}/Libraries/FWLIB/inc",
                 "${workspaceRoot}/Libraries/CMSIS"
             ],
-            "defines": ["STM32F10X_HD","USE_STDPERIPH_DRIVER","__CC_ARM"],
+            "defines": ["STM32F10X_HD","USE_STDPERIPH_DRIVER","__CC_ARM","__packed="],
             "browse": {
                 "path": [
                     "${workspaceRoot}/User",
