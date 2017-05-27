@@ -28,6 +28,12 @@ LED_BlinkMode Blink_Init[] = {
     {BLINK_OFF, 1000},
     {BLINK_LOOP, 0}};
 
+//调试模式
+LED_BlinkMode Blink_DebugMode[] = {
+    {BLINK_ON, 1000},
+    {BLINK_OFF, 1000},
+    {BLINK_LOOP, 0}};
+    
 //警告，普通错误
 LED_BlinkMode Blink_WARNING[] = {
     {BLINK_ON, 100},

@@ -18,23 +18,22 @@ u8 BT_state = 0;
 
 void USART_Configuration(void)
 {
-  USART_InitTypeDef USART_InitStructure;
+	USART_InitTypeDef USART_InitStructure;
 
-  USART_InitStructure.USART_BaudRate = 115200;                          //设置波特率
-  USART_InitStructure.USART_WordLength = USART_WordLength_8b;		  //8位字符长度
-  USART_InitStructure.USART_StopBits = USART_StopBits_1;			  //一位停止位			    
-  USART_InitStructure.USART_Parity = USART_Parity_No;				  //无奇偶校验位
-  USART_InitStructure.USART_HardwareFlowControl = USART_HardwareFlowControl_None;   //无硬件数据流控制
-  USART_InitStructure.USART_Mode = USART_Mode_Rx | USART_Mode_Tx;	  //收发模式
-  USART_Init(USART1, &USART_InitStructure);				   
-  USART_ITConfig(USART1,USART_IT_RXNE,ENABLE);							//使能串口中断接收
-  //USART_ClearFlag(USART1, USART_FLAG_TC);  
+	USART_InitStructure.USART_BaudRate = 115200;									//设置波特率
+	USART_InitStructure.USART_WordLength = USART_WordLength_8b;						//8位字符长度
+	USART_InitStructure.USART_StopBits = USART_StopBits_1;							//一位停止位
+	USART_InitStructure.USART_Parity = USART_Parity_No;								//无奇偶校验位
+	USART_InitStructure.USART_HardwareFlowControl = USART_HardwareFlowControl_None; //无硬件数据流控制
+	USART_InitStructure.USART_Mode = USART_Mode_Rx | USART_Mode_Tx;					//收发模式
+	USART_Init(USART1, &USART_InitStructure);
+	USART_ITConfig(USART1, USART_IT_RXNE, ENABLE); //使能串口中断接收
+	//USART_ClearFlag(USART1, USART_FLAG_TC);
 
-  USART_Cmd(USART1, ENABLE);	             //使能串口 
-  GPIO_SetBits(GPIOA,GPIO_Pin_12); 			//使能蓝牙 AT模式
-  //GPIO_ResetBits(GPIOA,GPIO_Pin_12);	   //使能蓝牙 工作模式??
-  USART_GetFlagStatus(USART1, USART_FLAG_TC);//读取TC能将其置位，解决第一字节发送失败的问题
-
+	USART_Cmd(USART1, ENABLE);		  //使能串口
+	GPIO_SetBits(GPIOA, GPIO_Pin_12); //使能蓝牙 AT模式
+	//GPIO_ResetBits(GPIOA,GPIO_Pin_12);	   //使能蓝牙 工作模式??
+	USART_GetFlagStatus(USART1, USART_FLAG_TC); //读取TC能将其置位，解决第一字节发送失败的问题
 }
 
 void USART1_sendData_u8(u8 data)	 	//串口发送8位数据
@@ -94,7 +93,6 @@ void USART1_sendStr(u8 *data)
 /**********************串口接收中断*******************************************/
 void USART1_IRQHandler()
 {
-	
 	if(USART_GetITStatus(USART1,USART_IT_RXNE))  	//读取接收中断标志位USART_IT_RXNE 
 	{
 		while (USART_GetFlagStatus(USART1, USART_FLAG_RXNE))	//直到读取完毕
@@ -286,7 +284,10 @@ void USART1_IRQHandler()
 
 				//	DMA_Buff_In_16(receive_Data,ROLL_GYRO_KP_INDEX);		//写入DMA回传到上位机
 					stQuadrotor_State.u16_ROLL_G_Kp = receive_Data;
-					EE_WriteVariable(ROLL_GYRO_KP_ADDR,receive_Data);	   //将参数储存进Flash，方便下次开机读取
+					if(!DebugMode)
+					{
+						EE_WriteVariable(ROLL_GYRO_KP_ADDR,receive_Data);	   //将参数储存进Flash，方便下次开机读取
+					}
 					Roll.Gyro_Kp = ((float)receive_Data) / 100.0;		   //
 					break;
 				}
@@ -301,7 +302,10 @@ void USART1_IRQHandler()
 
 			//		DMA_Buff_In_16(receive_Data,ROLL_GYRO_KI_INDEX);		//写入DMA回传到上位机
 					stQuadrotor_State.u16_ROLL_G_Ki = receive_Data;
-					EE_WriteVariable(ROLL_GYRO_KI_ADDR,receive_Data);	   //将参数储存进Flash，方便下次开机读取
+					if(!DebugMode)
+					{
+						EE_WriteVariable(ROLL_GYRO_KI_ADDR,receive_Data);	   //将参数储存进Flash，方便下次开机读取
+					}
 					Roll.Gyro_Ki = ((float)receive_Data) / 100.0;		   //
 					break;
 				}
@@ -316,7 +320,10 @@ void USART1_IRQHandler()
 
 			//		DMA_Buff_In_16(receive_Data,ROLL_GYRO_KD_INDEX);		//写入DMA回传到上位机
 					stQuadrotor_State.u16_ROLL_G_Kd = receive_Data;
-					EE_WriteVariable(ROLL_GYRO_KD_ADDR,receive_Data);	   //将参数储存进Flash，方便下次开机读取
+					if(!DebugMode)
+					{
+						EE_WriteVariable(ROLL_GYRO_KD_ADDR,receive_Data);	   //将参数储存进Flash，方便下次开机读取
+					}
 					Roll.Gyro_Kd = ((float)receive_Data) / 100.0;		   //
 					break;
 				}
@@ -331,7 +338,10 @@ void USART1_IRQHandler()
 
 			//		DMA_Buff_In_16(receive_Data,ROLL_ANGLE_KP_INDEX);		//写入DMA回传到上位机
 					stQuadrotor_State.u16_ROLL_Angle_Kp = receive_Data;
-					EE_WriteVariable(ROLL_ANGLE_KP_ADDR,receive_Data);	   //将参数储存进Flash，方便下次开机读取
+					if(!DebugMode)
+					{
+						EE_WriteVariable(ROLL_ANGLE_KP_ADDR,receive_Data);	   //将参数储存进Flash，方便下次开机读取
+					}
 					Roll.angle_Kp = ((float)receive_Data) / 100.0;		   //
 					break;
 				}
@@ -346,7 +356,10 @@ void USART1_IRQHandler()
 
 		//			DMA_Buff_In_16(receive_Data,ROLL_ANGLE_KI_INDEX);		//写入DMA回传到上位机
 					stQuadrotor_State.u16_ROLL_Angle_Ki = receive_Data;
-					EE_WriteVariable(ROLL_ANGLE_KI_ADDR,receive_Data);	   //将参数储存进Flash，方便下次开机读取
+					if(!DebugMode)
+					{
+						EE_WriteVariable(ROLL_ANGLE_KI_ADDR,receive_Data);	   //将参数储存进Flash，方便下次开机读取
+					}
 					Roll.angle_Ki = ((float)receive_Data) / 100.0;		   //
 					break;
 				}
@@ -361,7 +374,10 @@ void USART1_IRQHandler()
 
 			//		DMA_Buff_In_16(receive_Data,ROLL_ANGLE_KD_INDEX);		//写入DMA回传到上位机
 					stQuadrotor_State.u16_ROLL_Angle_Kd = receive_Data;
-					EE_WriteVariable(ROLL_ANGLE_KD_ADDR,receive_Data);	   //将参数储存进Flash，方便下次开机读取
+					if(!DebugMode)
+					{
+						EE_WriteVariable(ROLL_ANGLE_KD_ADDR,receive_Data);	   //将参数储存进Flash，方便下次开机读取
+					}
 					Roll.angle_Kd = ((float)receive_Data) / 100.0;		   //
 					break;
 				}
@@ -376,7 +392,10 @@ void USART1_IRQHandler()
 
 			//		DMA_Buff_In_16(receive_Data,PITCH_GYRO_KP_INDEX);		//写入DMA回传到上位机
 					stQuadrotor_State.u16_PITCH_G_Kp = receive_Data;
-					EE_WriteVariable(PITCH_GYRO_KP_ADDR,receive_Data);	   //将参数储存进Flash，方便下次开机读取
+					if(!DebugMode)
+					{
+						EE_WriteVariable(PITCH_GYRO_KP_ADDR,receive_Data);	   //将参数储存进Flash，方便下次开机读取
+					}
 					Pitch.Gyro_Kp = ((float)receive_Data) / 100.0;		   //
 					break;
 				}
@@ -391,7 +410,10 @@ void USART1_IRQHandler()
 
 		//			DMA_Buff_In_16(receive_Data,PITCH_GYRO_KI_INDEX);		//写入DMA回传到上位机
 					stQuadrotor_State.u16_PITCH_G_Ki = receive_Data;
-					EE_WriteVariable(PITCH_GYRO_KI_ADDR,receive_Data);	   //将参数储存进Flash，方便下次开机读取
+					if(!DebugMode)
+					{
+						EE_WriteVariable(PITCH_GYRO_KI_ADDR,receive_Data);	   //将参数储存进Flash，方便下次开机读取
+					}
 					Pitch.Gyro_Ki = ((float)receive_Data) / 100.0;		   //
 					break;
 				}
@@ -406,7 +428,10 @@ void USART1_IRQHandler()
 
 		//			DMA_Buff_In_16(receive_Data,PITCH_GYRO_KD_INDEX);		//写入DMA回传到上位机
 					stQuadrotor_State.u16_PITCH_G_Kd = receive_Data;
-					EE_WriteVariable(PITCH_GYRO_KD_ADDR,receive_Data);	   //将参数储存进Flash，方便下次开机读取
+					if(!DebugMode)
+					{
+						EE_WriteVariable(PITCH_GYRO_KD_ADDR,receive_Data);	   //将参数储存进Flash，方便下次开机读取
+					}
 					Pitch.Gyro_Kd = ((float)receive_Data) / 100.0;		   //
 					break;
 				}
@@ -421,7 +446,10 @@ void USART1_IRQHandler()
 
 					//DMA_Buff_In_16(receive_Data,PITCH_ANGLE_KP_INDEX);		//写入DMA回传到上位机
 					stQuadrotor_State.u16_PITCH_Angle_Kp = receive_Data;
-					EE_WriteVariable(PITCH_ANGLE_KP_ADDR,receive_Data);	   //将参数储存进Flash，方便下次开机读取
+					if(!DebugMode)
+					{
+						EE_WriteVariable(PITCH_ANGLE_KP_ADDR,receive_Data);	   //将参数储存进Flash，方便下次开机读取
+					}
 					Pitch.angle_Kp = ((float)receive_Data) / 100.0;		   //
 					break;
 				}
@@ -436,7 +464,10 @@ void USART1_IRQHandler()
 
 				//	DMA_Buff_In_16(receive_Data,PITCH_ANGLE_KI_INDEX);		//写入DMA回传到上位机
 					stQuadrotor_State.u16_PITCH_Angle_Ki = receive_Data;
-					EE_WriteVariable(PITCH_ANGLE_KI_ADDR,receive_Data);	   //将参数储存进Flash，方便下次开机读取
+					if(!DebugMode)
+					{
+						EE_WriteVariable(PITCH_ANGLE_KI_ADDR,receive_Data);	   //将参数储存进Flash，方便下次开机读取
+					}
 					Pitch.angle_Ki = ((float)receive_Data) / 100.0;		   //
 					break;
 				}
@@ -451,7 +482,10 @@ void USART1_IRQHandler()
 
 			//		DMA_Buff_In_16(receive_Data,PITCH_ANGLE_KD_INDEX);		//写入DMA回传到上位机
 					stQuadrotor_State.u16_PITCH_Angle_Kd = receive_Data;
-					EE_WriteVariable(PITCH_ANGLE_KD_ADDR,receive_Data);	   //将参数储存进Flash，方便下次开机读取
+					if(!DebugMode)
+					{
+						EE_WriteVariable(PITCH_ANGLE_KD_ADDR,receive_Data);	   //将参数储存进Flash，方便下次开机读取
+					}
 					Pitch.angle_Kd = ((float)receive_Data) / 100.0;		   //
 					break;
 				}
@@ -466,7 +500,10 @@ void USART1_IRQHandler()
 
 			//		DMA_Buff_In_16(receive_Data,YAW_GYRO_KP_INDEX);		//写入DMA回传到上位机
 					stQuadrotor_State.u16_YAW_G_Kp = receive_Data;
-					EE_WriteVariable(YAW_GYRO_KP_ADDR,receive_Data);	   //将参数储存进Flash，方便下次开机读取
+					if(!DebugMode)
+					{
+						EE_WriteVariable(YAW_GYRO_KP_ADDR,receive_Data);	   //将参数储存进Flash，方便下次开机读取
+					}
 					Yaw.Gyro_Kp = ((float)receive_Data) / 100.0;		   //
 					break;
 				}
@@ -481,7 +518,10 @@ void USART1_IRQHandler()
 
 			//		DMA_Buff_In_16(receive_Data,YAW_GYRO_KI_INDEX);		//写入DMA回传到上位机
 					stQuadrotor_State.u16_YAW_G_Ki = receive_Data;
-					EE_WriteVariable(YAW_GYRO_KI_ADDR,receive_Data);	   //将参数储存进Flash，方便下次开机读取
+					if(!DebugMode)
+					{
+						EE_WriteVariable(YAW_GYRO_KI_ADDR,receive_Data);	   //将参数储存进Flash，方便下次开机读取
+					}
 					Yaw.Gyro_Ki = ((float)receive_Data) / 100.0;		   //
 					break;
 				}
@@ -496,7 +536,10 @@ void USART1_IRQHandler()
 
 			//		DMA_Buff_In_16(receive_Data,YAW_GYRO_KD_INDEX);		//写入DMA回传到上位机
 					stQuadrotor_State.u16_YAW_G_Kd = receive_Data;
-					EE_WriteVariable(YAW_GYRO_KD_ADDR,receive_Data);	   //将参数储存进Flash，方便下次开机读取
+					if(!DebugMode)
+					{
+						EE_WriteVariable(YAW_GYRO_KD_ADDR,receive_Data);	   //将参数储存进Flash，方便下次开机读取
+					}
 					Yaw.Gyro_Kd = ((float)receive_Data) / 100.0;		   //
 					break;
 				}
@@ -519,23 +562,23 @@ void USART1_IRQHandler()
 
 void check_BT(void)      //检查蓝牙状态
 {
-	BT_state = GPIO_ReadInputDataBit(GPIOA,GPIO_Pin_11);
-	  if(BT_state)
-	  {
-	  	//TIM_Cmd(TIM4, ENABLE);  			//使能TIM4,开始数据传输	
-		DMA_Cmd(DMA1_Channel4, ENABLE);	
-		USART_DMACmd(USART1,USART_DMAReq_Tx,ENABLE);
+	BT_state = GPIO_ReadInputDataBit(GPIOA, GPIO_Pin_11);
+	if (BT_state)
+	{
+		//TIM_Cmd(TIM4, ENABLE);  			//使能TIM4,开始数据传输
+		DMA_Cmd(DMA1_Channel4, ENABLE);
+		USART_DMACmd(USART1, USART_DMAReq_Tx, ENABLE);
 		StartBlink(Blink_BT_Connect);
-		// LED_ON;		
-	  }	
-	  else
-	  {
-	  //	TIM_Cmd(TIM4, DISABLE); 
-		DMA_Cmd(DMA1_Channel4, DISABLE); 
-		USART_DMACmd(USART1,USART_DMAReq_Tx,DISABLE);
+		// LED_ON;
+	}
+	else
+	{
+		//	TIM_Cmd(TIM4, DISABLE);
+		DMA_Cmd(DMA1_Channel4, DISABLE);
+		USART_DMACmd(USART1, USART_DMAReq_Tx, DISABLE);
 		StopBlink(Blink_BT_Connect);
 		// LED_OFF;
-	  }	
+	}
 }
 
 /************************蓝牙开启/断开触发中断*************************************/

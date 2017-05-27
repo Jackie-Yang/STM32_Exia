@@ -39,6 +39,7 @@ typedef struct _BLINK_CYC_NODE_
 } BlinkCycNode, *pBlinkCycNode;
 
 extern LED_BlinkMode Blink_Init[];
+extern LED_BlinkMode Blink_DebugMode[];
 extern LED_BlinkMode Blink_BT_Connect[];
 extern LED_BlinkMode Blink_WARNING[];
 extern LED_BlinkMode Blink_ERROR[];

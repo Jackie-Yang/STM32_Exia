@@ -17,6 +17,7 @@
 
 
 Quadrotor_State stQuadrotor_State = {0};
+uint8_t DebugMode = 0;
 
 /********************系统初始化,所有模块初始化函数的集合****************************/
 int8_t init(void)
@@ -29,6 +30,14 @@ int8_t init(void)
 	FLASH_Unlock();
 	EE_Init();
 	LED_Blink_Init(); //定时器1，LED闪烁
+
+	//如果PB9接地则为调试模式（不从Flash读取PID参数）
+	DebugMode = !GPIO_ReadInputDataBit(GPIOB, GPIO_Pin_9);
+	if(DebugMode)
+	{
+		StartBlink(Blink_DebugMode);
+	}
+
 	StartBlink(Blink_Init); //LED闪烁：初始化
 
 	delay_ms(500); //上电先延时一小段时间，否则mpu6050会初始化失败
@@ -195,6 +204,11 @@ void GPIO_Configuration(void)
   	GPIO_InitStructure.GPIO_Speed = GPIO_Speed_50MHz;	 
   	GPIO_Init(GPIOB, &GPIO_InitStructure);
 
+/********************接收器脉冲输入引脚	  *************************/
+	GPIO_InitStructure.GPIO_Pin = GPIO_Pin_9;
+	GPIO_InitStructure.GPIO_Mode = GPIO_Mode_IPU;
+	GPIO_InitStructure.GPIO_Speed = GPIO_Speed_50MHz;
+  	GPIO_Init(GPIOB, &GPIO_InitStructure);
 
 //
 //  /*****************LD1, LD2, LD3 , LD4 引脚配置 *********************/	
