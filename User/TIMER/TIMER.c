@@ -67,10 +67,10 @@ void TIM4_IRQHandler(void)   //TIM4中断进行参数更新
 		//获取接收器数据，如果接收器没有收到信号，则不会更新，因此串口可以在没有接收器时进行设置
 		//但如果接收器接收到数据，定时器将会持续进行更新，此时串口的控制将被屏蔽
 		GetReceiverData(&stQuadrotor_State.u16_Rudd);
-
-		Roll_Set = 50.0 * (stQuadrotor_State.u16_Aile - 1100.0) / 800.0 - 25.0;
-		Pitch_Set = -(50.0 * (stQuadrotor_State.u16_Elev - 1100.0) / 800.0 - 25.0);
-		Yaw_Set =  -(100.0 * (stQuadrotor_State.u16_Rudd - 1100.0) / 800.0 - 50.0);
+		//1100～1900映射到-400/16 ~ 400/16，即映射到-25~25
+		Roll_Set = (stQuadrotor_State.u16_Aile - 1500.0) / 16.0;
+		Pitch_Set = -(stQuadrotor_State.u16_Elev - 1500.0) / 16.0;
+		Yaw_Set =  -(stQuadrotor_State.u16_Rudd - 1500.0) / 8.0;
 
 		PID_set(&Roll,Roll_Set);
 		PID_set(&Pitch,Pitch_Set);

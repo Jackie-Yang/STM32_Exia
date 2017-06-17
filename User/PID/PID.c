@@ -5,7 +5,7 @@
 #include "eeprom.h"
 #include "Setup.h"
 #include "TIMER.h"
-
+#include "stdlib.h"
 //参数整定找最佳， 从小到大顺序查。  
 //先是比例后积分， 最后再把微分加。  
 //曲线振荡很频繁， 比例度盘要放大。 
@@ -167,29 +167,32 @@ void PID_init(void)
 void PID_set(PID * PID_in,float PID_set)
 {
 	float Gyro_offset;
+	float I_index = 0.0;
 
 	if (stQuadrotor_State.u16_Thro > 1180)
 	{
 	/****************外环角度环********************/
 		float angle_offset = PID_set - PID_in->angle_cur;			//计算误差
 		float PID_angle_out = 0;
-	
-		PID_in->angle_i += angle_offset;							//积分
-		
-		if(PID_in->angle_i > 600)									//积分限幅，防止积分效果过大
+
+		if (abs(angle_offset) <= 30)
 		{
-			PID_in->angle_i = 600;
-		}
-		else if(PID_in->angle_i < -600)
-		{
-			PID_in->angle_i = -600;
-		}
+			I_index = (30 - abs(angle_offset)) / 30.0;
+			PID_in->angle_i += angle_offset; //积分
+			if (PID_in->angle_i > 600)		 //积分限幅，防止积分效果过大
+			{
+				PID_in->angle_i = 600;
+			}
+			else if (PID_in->angle_i < -600)
+			{
+				PID_in->angle_i = -600;
+			}
+		}	
 	
 		PID_in->angle_d = PID_in->angle_last - PID_in->angle_cur;	//微分
 		PID_in->angle_last = PID_in->angle_cur;	   					//保存留作下次微分
-	
-		PID_angle_out = PID_in->angle_Kp * angle_offset + PID_in->angle_Ki * PID_in->angle_i + PID_in->angle_Kd * PID_in->angle_d;	//外环输出
-	
+
+		PID_angle_out = PID_in->angle_Kp * angle_offset + I_index * PID_in->angle_Ki * PID_in->angle_i + PID_in->angle_Kd * PID_in->angle_d; //外环输出
 
 		//PID_angle_out = PID_set;	//角速度测试
 
